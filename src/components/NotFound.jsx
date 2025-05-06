@@ -57,7 +57,7 @@ const NotFound = () => {
             onClick={() => navigate('/')}
             className="w-full sm:w-auto px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition duration-200 font-medium"
           >
-            {language === "hi" ? "मुख्य पृष्ठ पर जाएं" : "Go to HomePage"}
+            {language === "hi" ? "मुख्य पृष्ठ पर जाएं" : "Go to Home"}
           </button>
           
           <button
