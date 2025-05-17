@@ -4,7 +4,7 @@ import { useLanguage } from "../../context/LanguageContext";
 
 const PrivacyPolicy = () => {
   const { language } = useLanguage();
-  const heroImage = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200";
+  const heroImage = "/privay-policy-herobg.webp";
 
   // Language-specific content
   const content = {
