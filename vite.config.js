@@ -22,4 +22,14 @@ export default defineConfig({
       },
     },
   },
+  assetsInclude: ['**/*.woff', '**/*.woff2'],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          fonts: ['@fontsource/noto-sans-devanagari', '@fontsource/inter']
+        }
+      }
+    }
+  }
 })

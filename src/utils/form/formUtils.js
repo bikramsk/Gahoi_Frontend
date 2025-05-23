@@ -13,14 +13,14 @@ import {
   validateNationality
 } from '../validation/validationUtils';
 
-// Helper functions for registration code generation
+
 const generateGenderCode = (gender) => gender === 'Male' ? 'M' : gender === 'Female' ? 'F' : 'X';
 const generateNationalityCode = (nationality) => nationality === 'Indian' ? '1' : nationality === 'Non-Indian' ? '0' : 'X';
 const generateGahoiCode = (isGahoi) => isGahoi === 'Yes' || isGahoi === true ? '3' : '0';
 
 // Fixed code mappings for all values
 const FIXED_CODES = {
-  // Regional Assembly codes (all possible assemblies)
+  // Regional Assembly codes 
   regionalAssembly: {
     "Chambal Regional Assembly": "01",
     "Central Malwa Regional Assembly": "02",
@@ -33,7 +33,7 @@ const FIXED_CODES = {
     "Southern Regional Assembly": "09",
     "Chhattisgarh Regional Assembly": "10"
   },
-  // Local Panchayat codes (all possible panchayats)
+  // Local Panchayat codes 
   localPanchayat: {
     // Chambal Regional Assembly panchayats
     "Gwalior": "01",
@@ -104,7 +104,7 @@ const FIXED_CODES = {
     "Guna": "57",
     "Ahmedabad": "58"
   },
-  // Sub Local Panchayat codes (all possible sub-panchayats)
+  // Sub Local Panchayat codes 
   subLocalPanchayat: {
     // Gwalior sub-panchayats
     "Madhavganj": "01",
