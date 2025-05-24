@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 const NotFound = () => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const header = document.querySelector('header');
@@ -43,12 +43,10 @@ const NotFound = () => {
         <div className="mb-8">
           <h1 className="text-9xl font-bold text-orange-500">404</h1>
           <div className="mt-4 text-xl font-semibold text-gray-800">
-            {language === "hi" ? "पृष्ठ नहीं मिला" : "Page Not Found"}
+            {t('notFound.title')}
           </div>
           <p className="mt-2 text-gray-600">
-            {language === "hi" 
-              ? "क्षमा करें, आपके द्वारा खोजा गया पृष्ठ मौजूद नहीं है।" 
-              : "Sorry, the page you are looking for doesn't exist."}
+            {t('notFound.description')}
           </p>
         </div>
         
@@ -57,14 +55,14 @@ const NotFound = () => {
             onClick={() => navigate('/')}
             className="w-full sm:w-auto px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition duration-200 font-medium"
           >
-            {language === "hi" ? "मुख्य पृष्ठ पर जाएं" : "Go to Home"}
+            {t('notFound.goHome')}
           </button>
           
           <button
             onClick={() => navigate(-1)}
             className="w-full sm:w-auto px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200 font-medium block sm:inline-block mt-3 sm:mt-0 sm:ml-3"
           >
-            {language === "hi" ? "पिछले पृष्ठ पर जाएं" : "Go Back"}
+            {t('notFound.goBack')}
           </button>
         </div>
       </div>

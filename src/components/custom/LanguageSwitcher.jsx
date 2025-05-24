@@ -1,9 +1,13 @@
 import React from 'react';
-import { useLanguage } from '../../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 const LanguageSwitcher = () => {
-  const { language, toggleLanguage } = useLanguage();
-  const isHindi = language === 'hi';
+  const { i18n } = useTranslation();
+  const isHindi = i18n.language === 'hi';
+
+  const toggleLanguage = () => {
+    i18n.changeLanguage(isHindi ? 'en' : 'hi');
+  };
 
   return (
     <div 

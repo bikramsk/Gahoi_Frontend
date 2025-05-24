@@ -1,43 +1,39 @@
 import React from 'react';
-import { useLanguage } from '../../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 const SuccessStories = () => {
-  const { language } = useLanguage();
+  const { t, i18n } = useTranslation();
+
+  // Language-specific font class
+  const languageFontClass = i18n.language === "hi" ? "font-hindi" : "font-english";
+
   const successStories = [
     {
       id: 1,
       coupleImage: 'story-4.webp',
-      groomName: 'Rahul Gahoi',
-      brideName: 'Priya Gupta',
+      translationKey: 'story1',
       date: 'Married on Dec 15, 2023',
-      story: 'Found each other through Gahoi Samaj community. Our families shared similar values and traditions, making it a perfect match.',
       location: 'Gwalior, MP'
     },
     {
       id: 2,
       coupleImage: '/story-5.webp',
-      groomName: 'Aditya Neekhra',
-      brideName: 'Sneha Gahoi',
+      translationKey: 'story2',
       date: 'Married on Nov 20, 2023',
-      story: 'Our journey began at a Gahoi Samaj community event. We are grateful to the community for bringing us together.',
       location: 'Indore, MP'
     },
     {
       id: 3,
       coupleImage: '/story-3.webp',
-      groomName: 'Vikram Gahoi',
-      brideName: 'Nisha Gupta',
+      translationKey: 'story3',
       date: 'Married on Oct 5, 2023',
-      story: 'Thanks to Gahoi Samaj for introducing us. Our shared community values and modern outlook made us perfect for each other.',
       location: 'Bhopal, MP'
     },
     {
       id: 4,
       coupleImage: '/story-2.webp',
-      groomName: 'Ankit Gupta',
-      brideName: 'Riya Gahoi',
+      translationKey: 'story4',
       date: 'Married on Sept 12, 2023',
-      story: 'Met through Gahoi Samaj community gatherings. Every moment since has been filled with joy and understanding.',
       location: 'Jabalpur, MP'
     }
   ];
@@ -47,14 +43,11 @@ const SuccessStories = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
-          <h2 className={`text-3xl md:text-4xl font-bold text-red-800 mb-4 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-            {language === 'hi' ? 'सफलता की कहानियां' : 'Success Stories'}
+          <h2 className={`text-3xl md:text-4xl font-bold text-red-800 mb-4 ${languageFontClass}`}>
+            {t('home.successStories.title')}
           </h2>
-          <p className={`text-lg text-gray-600 max-w-2xl mx-auto ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-            {language === 'hi' 
-              ? 'गहोई समाज के माध्यम से मिले सफल जीवन साथी'
-              : 'Successful matches through Gahoi Samaj'
-            }
+          <p className={`text-lg text-gray-600 max-w-2xl mx-auto ${languageFontClass}`}>
+            {t('home.successStories.subtitle')}
           </p>
         </div>
 
@@ -68,22 +61,22 @@ const SuccessStories = () => {
               <div className="relative h-64">
                 <img 
                   src={story.coupleImage}
-                  alt={`${story.groomName} & ${story.brideName}`}
+                  alt={t(`home.successStories.stories.${story.translationKey}.coupleNames`)}
                   className="w-full h-full object-cover object-top"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                 <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <div className="text-sm">{story.date}</div>
-                  <div className="font-medium">{story.location}</div>
+                  <div className={`text-sm ${languageFontClass}`}>{story.date}</div>
+                  <div className={`font-medium ${languageFontClass}`}>{story.location}</div>
                 </div>
               </div>
               
               <div className="p-6">
-                <h3 className={`text-lg font-bold text-gray-900 mb-2 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-                  {story.groomName} & {story.brideName}
+                <h3 className={`text-lg font-bold text-gray-900 mb-2 ${languageFontClass}`}>
+                  {t(`home.successStories.stories.${story.translationKey}.coupleNames`)}
                 </h3>
-                <p className={`text-gray-600 text-sm ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-                  {story.story.replace(/Gahoi Samaj/g, 'Gahoi Samaj')}
+                <p className={`text-gray-600 text-sm ${languageFontClass}`}>
+                  {t(`home.successStories.stories.${story.translationKey}.story`)}
                 </p>
               </div>
             </div>

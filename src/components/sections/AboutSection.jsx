@@ -1,9 +1,12 @@
 import React from 'react';
-import { useLanguage } from '../../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { FaQuoteLeft, FaCircle } from 'react-icons/fa';
 
 const AboutSection = () => {
-  const { language } = useLanguage();
+  const { t, i18n } = useTranslation();
+  
+  // Language-specific font class
+  const languageFontClass = i18n.language === "hi" ? "font-hindi" : "font-english";
   
   return (
     <div className="py-16 bg-gradient-to-b from-white to-red-50 relative overflow-hidden">
@@ -22,17 +25,14 @@ const AboutSection = () => {
             
             {/* Section Title with decorative line */}
             <div className="relative mb-6">
-              <h2 className={`text-3xl md:text-4xl font-bold text-red-800 mb-4 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-                {language === 'hi' ? 'गहोई समाज के बारे में' : 'About Gahoi Samaj'}
+              <h2 className={`text-3xl md:text-4xl font-bold text-red-800 mb-4 ${languageFontClass}`}>
+                {t('home.about.title')}
               </h2>
               <div className="h-1 w-20 bg-gradient-to-r from-red-800 to-red-300 rounded-full"></div>
             </div>
 
-            <p className={`text-gray-600 mb-6 relative z-10 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-              {language === 'hi' 
-                ? 'गहोई समाज भारत, एक समृद्ध और प्रगतिशील समाज बनाने के लिए धार्मिक अध्ययन और आध्यात्मिकता पर जोर देता है। हम एक शांतिपूर्ण और ज्ञानवान समाज के निर्माण में योगदान करने में विश्वास रखते हैं। हम एक बुराई-मुक्त समाज बनाने की दिशा में काम करते हैं और अस्पृश्यता, अंधविश्वास और रूढ़िवादी मान्यताओं को त्याग कर उदारता और स्वीकृति का माहौल बनाते हैं।'
-                : 'Gahoi Samaj India emphasizes religious studies and spirituality for creating a refined and progressive society. We believe in contributing towards building a peaceful and enlightened society. We work towards building an evil-free society and discard untouchability, superstitions and orthodox beliefs, creating an environment of broad-mindedness and acceptance.'
-              }
+            <p className={`text-gray-600 mb-6 relative z-10 ${languageFontClass}`}>
+              {t('home.about.description')}
             </p>
 
             {/* Decorative dots */}
@@ -51,7 +51,7 @@ const AboutSection = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                 <img 
                   src="/about-02.webp" 
-                  alt="Community Gathering" 
+                  alt={t('home.about.images.communityGathering')} 
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -61,7 +61,7 @@ const AboutSection = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                 <img 
                   src="/about-01.webp" 
-                  alt="Cultural Event" 
+                  alt={t('home.about.images.culturalEvent')} 
                   className="w-full h-full object-cover"
                 />
               </div>

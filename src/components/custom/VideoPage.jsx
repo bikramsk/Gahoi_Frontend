@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
+import { useTranslation } from "react-i18next";
 
 const Video = () => {
+  const { t, i18n } = useTranslation();
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const languageFontClass = i18n.language === "hi" ? "font-hindi" : "font-english";
 
   // Lock scroll when modal is open
   useEffect(() => {
@@ -100,10 +103,10 @@ const Video = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 via-red-50/30 to-gray-50">
       <Helmet>
-        <title>वीडियो गैलरी - गहोई समाज</title>
+        <title>{t('videoPage.meta.title')}</title>
         <meta
           name="description"
-          content="गहोई वैश्य महासभा की वीडियो गैलरी - हमारी गतिविधियों और कार्यक्रमों का संग्रह"
+          content={t('videoPage.meta.description')}
         />
       </Helmet>
 
@@ -145,7 +148,7 @@ const Video = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-900/30 to-red-900/70"></div>
         <img
           src="/videopage-hero.webp"
-          alt="Video Gallery Background"
+          alt={t('videoPage.hero.backgroundAlt')}
           className="absolute inset-0 w-full h-full object-cover opacity-50"
         />
         <div className="container mx-auto px-4 relative z-10">
@@ -166,11 +169,11 @@ const Video = () => {
                 />
               </svg>
             </div>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6">
-              वीडियो गैलरी
+            <h1 className={`text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 ${languageFontClass}`}>
+              {t('videoPage.hero.title')}
             </h1>
-            <p className="text-xl md:text-2xl text-white font-medium max-w-3xl mx-auto">
-              गहोई वैश्य महासभा की गतिविधियों का दृश्य संग्रह
+            <p className={`text-xl md:text-2xl text-white font-medium max-w-3xl mx-auto ${languageFontClass}`}>
+              {t('videoPage.hero.subtitle')}
             </p>
           </div>
         </div>

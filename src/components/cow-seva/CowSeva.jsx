@@ -1,69 +1,75 @@
 import React, { memo } from "react";
 import { Helmet } from "react-helmet";
-import { useLanguage } from "../../context/LanguageContext";
+import { useTranslation } from 'react-i18next';
 import { Link } from "react-router-dom";
 import { CowSevaCollection } from "./index";
 
 // Extracted components for better organization
-const SectionTitle = memo(({ title, language, headingStyles }) => (
-  <div className="text-center mb-8">
-    <h2 className={headingStyles}>{title[language]}</h2>
-    <div className="w-24 h-1 bg-red-700 mx-auto rounded-full"></div>
-  </div>
-));
-
-const ServiceCard = memo(({ method, language, languageFontClass, paragraphStyles }) => (
-  <div className="bg-gradient-to-br from-white to-orange-50 shadow-lg p-6 md:p-8 rounded-lg border-t-4 border-[#FD7D01]">
-    <div className="flex items-center gap-4 mb-4">
-      <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-orange-100 to-red-50 rounded-full flex items-center justify-center shadow-inner">
-        {method.icon}
-      </div>
-      <h3 className={`text-lg md:text-xl font-bold text-gray-800 ${languageFontClass}`}>
-        {method.title[language]}
-      </h3>
+const SectionTitle = memo(({ title, headingStyles }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="text-center mb-8">
+      <h2 className={headingStyles}>{t(title)}</h2>
+      <div className="w-24 h-1 bg-orange-500 mx-auto rounded-full"></div>
     </div>
-    <p className={`${paragraphStyles} pl-16`}>
-      {method.description[language]}
-    </p>
-  </div>
-));
+  );
+});
 
-const DonateButton = memo(({ language, languageFontClass }) => (
-  <Link to="/contact-us">
-    <button className="relative group">
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-red-600 to-amber-500 rounded-full opacity-60 blur-sm group-hover:opacity-100 transition duration-300"></div>
-      <div className={`relative w-full bg-[#FD7D01] text-white px-8 md:px-12 py-4 md:py-5 rounded-full font-semibold shadow-lg group-hover:shadow-xl transition-all text-lg md:text-xl ${languageFontClass}`}>
-        {language === "hi" ? "दान करें" : "Donate Now"}
+const ServiceCard = memo(({ method, languageFontClass, paragraphStyles }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="bg-gradient-to-br from-white to-orange-50 shadow-lg p-6 md:p-8 rounded-lg border-t-4 border-[#FD7D01]">
+      <div className="flex items-center gap-4 mb-4">
+        <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-orange-100 to-red-50 rounded-full flex items-center justify-center shadow-inner">
+          {method.icon}
+        </div>
+        <h3 className={`text-lg md:text-xl font-bold text-gray-800 ${languageFontClass}`}>
+          {t(method.title)}
+        </h3>
       </div>
-    </button>
-  </Link>
-));
+      <p className={`${paragraphStyles} pl-16`}>
+        {t(method.description)}
+      </p>
+    </div>
+  );
+});
+
+const DonateButton = memo(({ languageFontClass }) => {
+  const { t } = useTranslation();
+  return (
+    <Link to="/contact-us">
+      <button className="relative group">
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-600 to-amber-500 rounded-full opacity-60 blur-sm group-hover:opacity-100 transition duration-300"></div>
+        <div className={`relative w-full bg-[#FD7D01] text-white px-8 md:px-12 py-4 md:py-5 rounded-full font-semibold shadow-lg group-hover:shadow-xl transition-all text-lg md:text-xl ${languageFontClass}`}>
+          {t('cowSeva.donateButton')}
+        </div>
+      </button>
+    </Link>
+  );
+});
 
 const CowSeva = () => {
-  const { language } = useLanguage();
+  const { t, i18n } = useTranslation();
 
-  const languageFontClass = "font-inter";
+  const languageFontClass = i18n.language === "hi" ? "font-hindi" : "font-english";
   const hindiTextClass =
-    language === "hi" ? "text-base lg:text-lg" : "text-sm lg:text-base";
+    i18n.language === "hi" ? "text-base lg:text-lg" : "text-sm lg:text-base";
 
   // reusable styles
   const sectionStyles = "mb-8 md:mb-16";
   const cardStyles =
-    "bg-white rounded-lg p-4 md:p-8 shadow-md border-l-4 border-red-700";
+    "bg-white rounded-lg p-4 md:p-8 shadow-md border-l-4 border-orange-700";
   const headingStyles = `text-xl sm:text-2xl md:text-4xl font-bold text-gray-800 mb-3 md:mb-4 ${languageFontClass}`;
   const paragraphStyles = `text-gray-700 leading-relaxed text-sm md:text-base lg:text-lg ${languageFontClass}`;
 
   const howToServe = [
     {
-      title: { hi: "गौ दान", en: "Cow Donation" },
-      description: {
-        hi: "आप नकद राशि देकर या गाय खरीदकर गौशाला को दान कर सकते हैं।",
-        en: "You can donate by giving cash or by purchasing a cow for the gaushala.",
-      },
+      title: 'cowSeva.methods.cowDonation.title',
+      description: 'cowSeva.methods.cowDonation.description',
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 text-red-700"
+          className="h-6 w-6 text-orange-700"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -78,15 +84,12 @@ const CowSeva = () => {
       ),
     },
     {
-      title: { hi: "चारा दान", en: "Fodder Donation" },
-      description: {
-        hi: "आप गायों के लिए चारा, भूसा या घास दान कर सकते हैं।",
-        en: "You can donate fodder, straw, or grass for the cows.",
-      },
+      title: 'cowSeva.methods.fodderDonation.title',
+      description: 'cowSeva.methods.fodderDonation.description',
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 text-red-700"
+          className="h-6 w-6 text-orange-700"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -101,15 +104,12 @@ const CowSeva = () => {
       ),
     },
     {
-      title: { hi: "स्वयंसेवा", en: "Volunteer" },
-      description: {
-        hi: "आप अपना समय देकर गौशाला में गायों की सेवा कर सकते हैं।",
-        en: "You can volunteer your time to serve cows at the gaushala.",
-      },
+      title: 'cowSeva.methods.volunteer.title',
+      description: 'cowSeva.methods.volunteer.description',
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 text-red-700"
+          className="h-6 w-6 text-orange-700"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -124,15 +124,12 @@ const CowSeva = () => {
       ),
     },
     {
-      title: { hi: "गौ उत्पाद खरीदें", en: "Buy Cow Products" },
-      description: {
-        hi: "आप गौ आधारित उत्पाद खरीदकर गौशाला का समर्थन कर सकते हैं।",
-        en: "You can support gaushalas by purchasing cow-based products.",
-      },
+      title: 'cowSeva.methods.buyProducts.title',
+      description: 'cowSeva.methods.buyProducts.description',
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 text-red-700"
+          className="h-6 w-6 text-orange-700"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -157,19 +154,15 @@ const CowSeva = () => {
   return (
     <div className="bg-gray-50">
       <Helmet>
-        <title>{language === "hi" ? "गौ सेवा" : "Cow Seva"}</title>
+        <title>{t('cowSeva.title')}</title>
         <meta
           name="description"
-          content={
-            language === "hi"
-              ? "गौ माता हमारी संस्कृति का महत्वपूर्ण हिस्सा हैं। उनकी सेवा और देखभाल के लिए समर्पित गहोई शक्ति जन कल्याण समिति का गौ दान कार्यक्रम।"
-              : "Mother Cow is an important part of our culture. Gahoi Shakti Jan Kalyan Samiti's cow donation program dedicated to their service and care."
-          }
+          content={t('cowSeva.description')}
         />
       </Helmet>
 
       {/* Hero Banner */}
-      <div className="relative w-full bg-red-800 pt-24 md:pt-32 pb-12 md:pb-16 overflow-hidden ">
+      <div className="relative w-full bg-orange-800 pt-24 md:pt-32 pb-12 md:pb-16 overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-50"></div>
         <img
           src="/cowseva-hero.webp"
@@ -197,21 +190,20 @@ const CowSeva = () => {
             <h1
               className={`text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 ${languageFontClass}`}
             >
-              {language === "hi" ? "गौ सेवा" : "Cow Seva"}
+              {t('cowSeva.title')}
             </h1>
             <p
               className={`text-xl md:text-2xl text-white opacity-90 max-w-3xl mx-auto ${languageFontClass}`}
             >
-              {language === "hi"
+              {i18n.language === "hi"
                 ? "गौ माता की सेवा, मानवता की सेवा"
                 : "Serving Cows, Serving Humanity"}
             </p>
           </div>
         </div>
-      
       </div>
 
-      <div className="container mx-auto px-3 md:px-4 max-w-6xl -mt-6 md:-mt-10 ">
+      <div className="container mx-auto px-3 md:px-4 max-w-6xl -mt-6 md:-mt-10">
         {/* Main Content Card */}
         <div
           className={`bg-white rounded-lg shadow-lg p-5 md:p-8 mb-6 md:mb-10 relative ${decorativeStyles.gradientBg}`}
@@ -236,14 +228,12 @@ const CowSeva = () => {
                 />
                 <p
                   className={`relative z-10 ${paragraphStyles} ${
-                    language === "hi"
+                    i18n.language === "hi"
                       ? "leading-[1.8] tracking-wide text-justify"
                       : "leading-normal text-left"
                   }`}
                 >
-                  {language === "hi"
-                    ? "गौ माता हमारी संस्कृति में परम पूजनीय हैं। वेदों में गौ माता को देवता के समान माना गया है। गौ सेवा और गौ दान को अत्यंत पुण्यदायी माना जाता है।"
-                    : "Mother Cow is highly revered in our culture. In the Vedas, the cow is considered equivalent to a deity. Cow service and donation are considered extremely virtuous."}
+                  {t('cowSeva.description')}
                 </p>
               </div>
             </div>
@@ -252,8 +242,7 @@ const CowSeva = () => {
           {/*  How to Serve Section */}
           <div className={sectionStyles}>
             <SectionTitle
-              title={{ hi: "गौ सेवा कैसे करें", en: "How to Serve Cows" }}
-              language={language}
+              title="cowSeva.title"
               headingStyles={headingStyles}
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
@@ -261,7 +250,6 @@ const CowSeva = () => {
                 <ServiceCard
                   key={index}
                   method={method}
-                  language={language}
                   languageFontClass={languageFontClass}
                   paragraphStyles={paragraphStyles}
                 />
@@ -287,18 +275,18 @@ const CowSeva = () => {
             <h2
               className={`text-2xl md:text-3xl lg:text-4xl font-bold text-[#FD7D01] mb-4 md:mb-6 ${languageFontClass}`}
             >
-              {language === "hi"
+              {i18n.language === "hi"
                 ? "आज ही गौ दान करें"
                 : "Donate for Cows Today"}
             </h2>
             <p
               className={`text-gray-700 mb-6 md:mb-8 max-w-2xl mx-auto text-lg md:text-xl ${languageFontClass}`}
             >
-              {language === "hi"
+              {i18n.language === "hi"
                 ? "गौ माता की सेवा करना हमारा धार्मिक और सामाजिक कर्तव्य है। आज ही अपना योगदान देकर इस पुण्य कार्य में भागीदार बनें।"
                 : "Serving mother cow is our religious and social duty. Become a part of this virtuous cause by contributing today."}
             </p>
-            <DonateButton language={language} languageFontClass={languageFontClass} />
+            <DonateButton languageFontClass={languageFontClass} />
           </div>
         </div>
       </div>

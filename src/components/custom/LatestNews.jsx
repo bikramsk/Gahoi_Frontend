@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
-import { useLanguage } from "../../context/LanguageContext";
+import { useTranslation } from "react-i18next";
+import { FaCalendar, FaMapMarkerAlt, FaImages, FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa';
 
 const API_URL = import.meta.env.VITE_PUBLIC_STRAPI_API_URL || "http://localhost:1337";
 
 const LatestNews = () => {
-  const { language } = useLanguage();
+  const { t, i18n } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
   const [currentNewsItem, setCurrentNewsItem] = useState(null);
   const [news, setNews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const newsPerPage = 4;
+  const newsPerPage = 6;
+
+  // Language-specific font class
+  const languageFontClass = i18n.language === "hi" ? "font-hindi" : "font-english";
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -138,20 +142,17 @@ const LatestNews = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 via-red-50/30 to-gray-50">
       <Helmet>
-        <title>{language === "hi" ? "समाचार - गहोई समाज" : "News - Gahoi Samaj"}</title>
-        <meta
-          name="description"
-          content={language === "hi" ? "गहोई समाज के नवीनतम समाचार और गतिविधियां" : "Latest news and activities of Gahoi Samaj"}
-        />
+        <title>{t('latestNews.meta.title')}</title>
+        <meta name="description" content={t('latestNews.meta.description')} />
       </Helmet>
 
       {/* Hero Section */}
-      <div className="relative w-full bg-red-800 pt-24 md:pt-32 pb-16 md:pb-24">
+      <div className="relative w-full bg-red-800 pt-32 md:pt-40 pb-20 md:pb-32">
         <div className="absolute inset-0 bg-black/60"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-900/30 to-red-900/70"></div>
         <img
           src="/latestnews-hero.webp"
-          alt="News Background"
+          alt={t('latestNews.hero.backgroundAlt')}
           className="absolute inset-0 w-full h-full object-cover opacity-50"
         />
         <div className="container mx-auto px-4 relative z-10">
@@ -172,179 +173,217 @@ const LatestNews = () => {
                 />
               </svg>
             </div>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6">
-              {language === "hi" ? "नवीनतम समाचार" : "Latest News"}
+            <h1 className={`text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 ${languageFontClass}`}>
+              {t('latestNews.hero.title')}
             </h1>
-            <p className="text-xl md:text-2xl text-white font-medium max-w-3xl mx-auto">
-              {language === "hi" 
-                ? "गहोई समाज की नवीनतम गतिविधियां और समाचार" 
-                : "Latest activities and news of Gahoi Samaj"}
+            <p className={`text-xl md:text-2xl text-white font-medium max-w-3xl mx-auto ${languageFontClass}`}>
+              {t('latestNews.hero.subtitle')}
             </p>
           </div>
         </div>
       </div>
 
       {/* News Content Section */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-12 md:py-16">
         <div className="max-w-7xl mx-auto">
           {isLoading ? (
             <div className="flex items-center justify-center min-h-[400px]">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-600"></div>
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-red-200 rounded-full animate-spin"></div>
+                <div className="w-16 h-16 border-4 border-red-600 rounded-full animate-spin absolute top-0 left-0 border-t-transparent"></div>
+              </div>
             </div>
           ) : error ? (
             <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {language === "hi" ? "समाचार लोड करने में त्रुटि" : "Error Loading News"}
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className={`text-xl font-semibold text-gray-900 mb-2 ${languageFontClass}`}>
+                {t('latestNews.error.title')}
               </h3>
-              <p className="text-gray-600">{error}</p>
+              <p className={`text-gray-600 ${languageFontClass}`}>{error}</p>
             </div>
           ) : news.length === 0 ? (
             <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {language === "hi" ? "कोई समाचार नहीं मिला" : "No News Found"}
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+              </div>
+              <h3 className={`text-xl font-semibold text-gray-900 mb-2 ${languageFontClass}`}>
+                {t('latestNews.empty.title')}
               </h3>
-              <p className="text-gray-600">
-                {language === "hi" 
-                  ? "वर्तमान में कोई समाचार उपलब्ध नहीं है"
-                  : "There are currently no news items available"}
+              <p className={`text-gray-600 ${languageFontClass}`}>
+                {t('latestNews.empty.description')}
               </p>
             </div>
           ) : (
-            <div className="space-y-8">
-              {currentNews.map((item) => (
-                <div key={item.id} className="bg-white rounded-3xl shadow-xl overflow-hidden">
-                  <div className="p-6 md:p-8">
-                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-                      {item.title[language]}
-                    </h2>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">
-                      <div className="flex items-center">
-                        <span className="mr-2">📅</span>
-                        {item.formattedDate}
-                      </div>
-                      {item.location && (
-                        <div className="flex items-center">
-                          <span className="mr-2">📍</span>
-                          {item.location}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-gray-700 mb-6 whitespace-pre-wrap leading-relaxed">
-                      {item.description[language].split('\n').map((paragraph, index) => (
-                        <p key={index} className="mb-4">{paragraph}</p>
-                      ))}
-                    </div>
-                    {item.images && item.images.length > 0 && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {item.images.map((image, index) => (
-                          <div
-                            key={index}
-                            className="relative aspect-video cursor-pointer"
-                            onClick={() => openModal(image, item)}
+            <>
+              {/* News Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {currentNews.map((newsItem) => (
+                  <div
+                    key={newsItem.id}
+                    className="bg-white rounded-3xl shadow-lg overflow-hidden transform transition-all duration-300 "
+                  >
+                    {/* News Images */}
+                    {newsItem.images.length > 0 && (
+                      <div className="relative h-64 overflow-hidden">
+                        <img
+                          src={newsItem.images[0]}
+                          alt={newsItem.title[i18n.language]}
+                          className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
+                          onClick={() => openModal(newsItem.images[0], newsItem)}
+                        />
+                        {newsItem.images.length > 1 && (
+                          <button
+                            onClick={() => openModal(newsItem.images[0], newsItem)}
+                            className="absolute bottom-4 right-4 bg-black/70 text-white px-4 py-2 rounded-full text-sm flex items-center gap-2 hover:bg-black/80"
                           >
-                            <img
-                              src={image}
-                              alt={`${item.title[language]} - ${index + 1}`}
-                              className="w-full h-full object-cover rounded-lg"
-                            />
-                          </div>
-                        ))}
+                            <FaImages className="w-4 h-4" />
+                            <span>{newsItem.images.length} {t('latestNews.moreImages')}</span>
+                          </button>
+                        )}
                       </div>
                     )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-8 flex justify-center gap-4">
-              <button
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className={`px-4 py-2 rounded-full ${
-                  currentPage === 1 ? 'bg-gray-200' : 'bg-red-600 text-white'
-                }`}
-              >
-                {language === "hi" ? "पिछला" : "Previous"}
-              </button>
-              <button
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className={`px-4 py-2 rounded-full ${
-                  currentPage === totalPages ? 'bg-gray-200' : 'bg-red-600 text-white'
-                }`}
-              >
-                {language === "hi" ? "अगला" : "Next"}
-              </button>
-            </div>
+                    {/* News Content */}
+                    <div className="p-6 md:p-8">
+                      <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <FaCalendar className="w-4 h-4 text-red-500" />
+                          <span className={languageFontClass}>{newsItem.formattedDate}</span>
+                        </div>
+                        {newsItem.location && (
+                          <div className="flex items-center gap-1">
+                            <FaMapMarkerAlt className="w-4 h-4 text-red-500" />
+                            <span className={languageFontClass}>{newsItem.location}</span>
+                          </div>
+                        )}
+                      </div>
+                      <h2 className={`text-2xl font-bold text-gray-900 mb-4 ${languageFontClass}`}>
+                        {newsItem.title[i18n.language]}
+                      </h2>
+                      <p className={`text-gray-600 mb-6 whitespace-pre-line ${languageFontClass}`}>
+                        {newsItem.description[i18n.language]}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-12">
+                  <button
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className={`p-2 rounded-full ${
+                      currentPage === 1
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-red-100 text-red-600 hover:bg-red-200"
+                    } transition-colors`}
+                  >
+                    <FaChevronLeft className="w-5 h-5" />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-10 h-10 rounded-full ${
+                        currentPage === page
+                          ? "bg-red-600 text-white"
+                          : "bg-red-100 text-red-600 hover:bg-red-200"
+                      } transition-colors`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className={`p-2 rounded-full ${
+                      currentPage === totalPages
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-red-100 text-red-600 hover:bg-red-200"
+                    } transition-colors`}
+                  >
+                    <FaChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
 
-      {/* Image Modal with Carousel */}
+      {/* Image Modal */}
       {selectedImage && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
-          onClick={closeModal}
-        >
-          <div 
-            className="relative max-h-[90vh] max-w-[90vw]"
-            onClick={e => e.stopPropagation()}
-          >
-            <img
-              src={selectedImage}
-              alt="Enlarged view"
-              className="max-h-[90vh] max-w-[90vw] object-contain"
-            />
-            
+        <div className="fixed inset-0 bg-black/95 z-50">
+          <div className="absolute inset-0 flex items-center justify-center p-4">
+            {/* Close Button */}
+            <button
+              onClick={closeModal}
+              className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors z-50"
+            >
+              <FaTimes className="w-8 h-8" />
+            </button>
+
+            {/* Navigation Buttons */}
             {currentNewsItem && currentNewsItem.images.length > 1 && (
               <>
-                {/* Previous Button */}
                 <button
-                  onClick={() => {
-                    const currentIndex = currentNewsItem.images.indexOf(selectedImage);
-                    const prevIndex = (currentIndex - 1 + currentNewsItem.images.length) % currentNewsItem.images.length;
-                    setSelectedImage(currentNewsItem.images[prevIndex]);
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateImage("prev");
                   }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/75 text-white p-3 rounded-full transition-all"
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/80 hover:text-white transition-colors z-50"
                 >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
+                  <FaChevronLeft className="w-8 h-8" />
                 </button>
-
-                {/* Next Button */}
                 <button
-                  onClick={() => {
-                    const currentIndex = currentNewsItem.images.indexOf(selectedImage);
-                    const nextIndex = (currentIndex + 1) % currentNewsItem.images.length;
-                    setSelectedImage(currentNewsItem.images[nextIndex]);
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateImage("next");
                   }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/75 text-white p-3 rounded-full transition-all"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/80 hover:text-white transition-colors z-50"
                 >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  <FaChevronRight className="w-8 h-8" />
                 </button>
-
-                {/* Image Counter */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full">
-                  {currentNewsItem.images.indexOf(selectedImage) + 1} / {currentNewsItem.images.length}
-                </div>
               </>
             )}
 
-            {/* Close Button */}
-            <button
-              className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/75 p-2 rounded-full transition-all"
-              onClick={closeModal}
-            >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            {/* Image Container */}
+            <div className="relative max-w-7xl w-full mx-auto" onClick={(e) => e.stopPropagation()}>
+              <img
+                src={selectedImage}
+                alt={currentNewsItem?.title[i18n.language]}
+                className="max-h-[85vh] mx-auto object-contain rounded-lg"
+              />
+              
+              {/* Image Info */}
+              {currentNewsItem && (
+                <div className="absolute left-0 right-0 bottom-0 p-6 bg-gradient-to-t from-black/80 to-transparent text-white">
+                  <h3 className={`text-2xl font-bold mb-2 ${languageFontClass}`}>
+                    {currentNewsItem.title[i18n.language]}
+                  </h3>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center gap-1">
+                      <FaCalendar className="w-4 h-4" />
+                      <span>{currentNewsItem.formattedDate}</span>
+                    </div>
+                    {currentNewsItem.location && (
+                      <div className="flex items-center gap-1">
+                        <FaMapMarkerAlt className="w-4 h-4" />
+                        <span>{currentNewsItem.location}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

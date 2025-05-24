@@ -1,10 +1,13 @@
 import React from 'react';
-import { useLanguage } from '../../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { FaCalendar, FaArrowRight } from 'react-icons/fa';
 
 const LatestNewsSection = ({ newsData = [] }) => {
-  const { language } = useLanguage();
+  const { t, i18n } = useTranslation();
+
+  // Language-specific font class
+  const languageFontClass = i18n.language === "hi" ? "font-hindi" : "font-english";
 
   return (
     <section className="py-16 bg-gradient-to-b from-white to-orange-50 relative overflow-hidden">
@@ -14,15 +17,12 @@ const LatestNewsSection = ({ newsData = [] }) => {
 
       <div className="container mx-auto px-4 relative">
         <div className="text-center mb-12">
-          <h2 className={`text-3xl md:text-4xl font-bold text-red-800 mb-6 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-            {language === 'hi' ? 'आगामी कार्यक्रम और समाचार' : 'Upcoming Events & Latest News'}
+          <h2 className={`text-3xl md:text-4xl font-bold text-red-800 mb-6 ${languageFontClass}`}>
+            {t('home.news.title')}
           </h2>
           <div className="h-1 w-20 bg-gradient-to-r from-red-800 to-red-300 rounded-full mx-auto mb-6"></div>
-          <p className={`text-lg text-gray-600 max-w-2xl mx-auto ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-            {language === 'hi' 
-              ? 'समाज के आगामी कार्यक्रमों और नवीनतम गतिविधियों से जुड़े रहें'
-              : 'Stay connected with upcoming community events and latest activities'
-            }
+          <p className={`text-lg text-gray-600 max-w-2xl mx-auto ${languageFontClass}`}>
+            {t('home.news.subtitle')}
           </p>
         </div>
 
@@ -32,7 +32,7 @@ const LatestNewsSection = ({ newsData = [] }) => {
               <div className="relative h-48 overflow-hidden">
                 <img 
                   src={news.image || '/news-placeholder.jpg'} 
-                  alt={news.title[language]} 
+                  alt={t('home.news.items.' + index + '.title')} 
                   className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -42,20 +42,20 @@ const LatestNewsSection = ({ newsData = [] }) => {
                   <div className="p-2 bg-red-50 rounded-full mr-3">
                     <FaCalendar className="w-4 h-4 text-red-600" />
                   </div>
-                  <span>{news.date}</span>
+                  <span className={languageFontClass}>{news.date}</span>
                 </div>
-                <h3 className={`text-xl font-semibold text-gray-900 mb-4 line-clamp-2 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-                  {news.title[language]}
+                <h3 className={`text-xl font-semibold text-gray-900 mb-4 line-clamp-2 ${languageFontClass}`}>
+                  {t('home.news.items.' + index + '.title')}
                 </h3>
-                <p className={`text-gray-600 mb-6 line-clamp-3 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-                  {news.excerpt[language]}
+                <p className={`text-gray-600 mb-6 line-clamp-3 ${languageFontClass}`}>
+                  {t('home.news.items.' + index + '.excerpt')}
                 </p>
                 <Link 
                   to="/LatestNews"
-                  className="inline-flex items-center text-red-600 hover:text-red-700 transition-colors group"
+                  className={`inline-flex items-center text-red-600 hover:text-red-700 transition-colors group ${languageFontClass}`}
                 >
-                  <span className={`${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-                    {language === 'hi' ? 'और पढ़ें' : 'Read More'}
+                  <span>
+                    {t('home.news.readMore')}
                   </span>
                   <FaArrowRight className="ml-2 transform group-hover:translate-x-1 transition-transform" />
                 </Link>
@@ -68,11 +68,9 @@ const LatestNewsSection = ({ newsData = [] }) => {
         <div className="text-center">
           <Link
             to="/LatestNews"
-            className={`inline-flex items-center justify-center px-6 py-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors ${
-              language === 'hi' ? 'font-hindi' : 'font-english'
-            }`}
+            className={`inline-flex items-center justify-center px-6 py-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors ${languageFontClass}`}
           >
-            {language === 'hi' ? 'सभी समाचार देखें' : 'View All News'}
+            {t('home.news.viewAll')}
             <FaArrowRight className="ml-2" />
           </Link>
         </div>

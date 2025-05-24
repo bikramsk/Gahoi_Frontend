@@ -1,6 +1,9 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 const StayConnected = () => {
+  const { t } = useTranslation();
+
   return (
     <div
       className="w-full relative overflow-hidden"
@@ -26,27 +29,25 @@ const StayConnected = () => {
         <div className="w-full md:w-1/2 text-white space-y-6">
           <div className="relative">
             <p className="uppercase tracking-wider text-sm md:text-base font-light">
-              STAY CONNECTED WITH
+              {t('home.stayConnected.heading')}
             </p>
             <div className="absolute -bottom-2 left-0 w-16 h-0.5 bg-white/60"></div>
           </div>
 
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif relative">
-          Gahoi Shakti Jan Kalyan Samiti
+            {t('home.stayConnected.title')}
             <div className="absolute -bottom-2 left-0 w-24 h-0.5 bg-white/60"></div>
           </h2>
 
           <p className="text-sm md:text-base leading-relaxed opacity-90 max-w-xl font-light">
-          Gahoi Shakti Jan Kalyan Samiti, religious studies and spirituality for creating a
-            refined society for everyone. we believe in contributing most
-            towards building a peaceful and enlightened society.
+            {t('home.stayConnected.description')}
           </p>
 
           <div className="max-w-lg h-[1px] bg-white/60 w-full"></div>
 
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <p className="font-medium text-base">For More Information</p>
+              <p className="font-medium text-base">{t('home.stayConnected.moreInfo')}</p>
               <a
                 href="https://play.google.com/store/apps/details?id=com.gahoisamaj"
                 target="_blank"
@@ -55,7 +56,7 @@ const StayConnected = () => {
               >
                 <img
                   src="/app_download.png"
-                  alt="Get it on Google Play"
+                  alt={t('home.stayConnected.playStoreAlt')}
                   className="h-12"
                 />
               </a>
@@ -65,7 +66,7 @@ const StayConnected = () => {
               href="#"
               className="inline-block text-sm border-b border-white/50 hover:border-white transition-colors duration-300 hover:text-white/90"
             >
-              Click here to view more about Apps
+              {t('home.stayConnected.viewMoreApps')}
             </a>
           </div>
         </div>
@@ -77,7 +78,7 @@ const StayConnected = () => {
             <div className="relative bg-white/5 backdrop-blur-sm rounded-2xl p-3 shadow-2xl">
               <img
                 src="/app.png"
-                alt="Gahoi Samaj App"
+                alt={t('home.stayConnected.appImageAlt')}
                 className="w-full h-auto rounded-xl"
               />
             </div>

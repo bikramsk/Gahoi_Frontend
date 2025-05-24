@@ -1,54 +1,33 @@
 import React from 'react';
-import { useLanguage } from '../../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { FaLandmark, FaHistory, FaUsers, FaAward, FaQuoteRight, FaHandHoldingHeart, FaBookReader } from 'react-icons/fa';
 
 const CulturalHeritageSection = () => {
-  const { language } = useLanguage();
+  const { t, i18n } = useTranslation();
+
+  // Language-specific font class
+  const languageFontClass = i18n.language === "hi" ? "font-hindi" : "font-english";
 
   const heritageItems = [
     {
       icon: <FaLandmark className="w-8 h-8 text-orange-600" />,
-      title: {
-        en: "Rich Traditions",
-        hi: "समृद्ध परंपराएं"
-      },
-      description: {
-        en: "Ancient customs and rituals that define our cultural identity",
-        hi: "प्राचीन रीति-रिवाज जो हमारी सांस्कृतिक पहचान को परिभाषित करते हैं"
-      }
+      title: t('home.heritage.items.traditions.title'),
+      description: t('home.heritage.items.traditions.description')
     },
     {
       icon: <FaHistory className="w-8 h-8 text-orange-600" />,
-      title: {
-        en: "Historical Legacy",
-        hi: "ऐतिहासिक विरासत"
-      },
-      description: {
-        en: "Our community's journey through centuries of achievements",
-        hi: "सदियों की उपलब्धियों के माध्यम से हमारे समाज की यात्रा"
-      }
+      title: t('home.heritage.items.legacy.title'),
+      description: t('home.heritage.items.legacy.description')
     },
     {
       icon: <FaUsers className="w-8 h-8 text-orange-600" />,
-      title: {
-        en: "Cultural Values",
-        hi: "सांस्कृतिक मूल्य"
-      },
-      description: {
-        en: "Core principles that guide our community",
-        hi: "मूल सिद्धांत जो हमारे समाज का मार्गदर्शन करते हैं"
-      }
+      title: t('home.heritage.items.values.title'),
+      description: t('home.heritage.items.values.description')
     },
     {
       icon: <FaAward className="w-8 h-8 text-orange-600" />,
-      title: {
-        en: "Notable Achievements",
-        hi: "उल्लेखनीय उपलब्धियां"
-      },
-      description: {
-        en: "Celebrating our community's accomplishments",
-        hi: "हमारे समाज की उपलब्धियों का उत्सव"
-      }
+      title: t('home.heritage.items.achievements.title'),
+      description: t('home.heritage.items.achievements.description')
     }
   ];
 
@@ -56,14 +35,11 @@ const CulturalHeritageSection = () => {
     <section className="py-16 bg-gradient-to-b from-orange-50 to-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className={`text-3xl md:text-4xl font-bold text-red-800 mb-4 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-            {language === 'hi' ? 'हमारी सांस्कृतिक विरासत' : 'Our Cultural Heritage'}
+          <h2 className={`text-3xl md:text-4xl font-bold text-red-800 mb-4 ${languageFontClass}`}>
+            {t('home.heritage.title')}
           </h2>
-          <p className={`text-lg text-gray-600 max-w-2xl mx-auto mb-8 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-            {language === 'hi' 
-              ? 'गहोई समाज की समृद्ध परंपराएं और सांस्कृतिक विरासत'
-              : 'Rich traditions and cultural heritage of the Gahoi Community'
-            }
+          <p className={`text-lg text-gray-600 max-w-2xl mx-auto mb-8 ${languageFontClass}`}>
+            {t('home.heritage.subtitle')}
           </p>
         </div>
 
@@ -78,11 +54,11 @@ const CulturalHeritageSection = () => {
                   {item.icon}
                 </div>
               </div>
-              <h3 className={`text-xl font-semibold text-gray-900 mb-2 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-                {item.title[language]}
+              <h3 className={`text-xl font-semibold text-gray-900 mb-2 ${languageFontClass}`}>
+                {item.title}
               </h3>
-              <p className={`text-gray-600 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-                {item.description[language]}
+              <p className={`text-gray-600 ${languageFontClass}`}>
+                {item.description}
               </p>
             </div>
           ))}
@@ -96,14 +72,11 @@ const CulturalHeritageSection = () => {
               <div className="inline-block p-4 bg-orange-100 rounded-full mb-6">
                 <FaQuoteRight className="w-8 h-8 text-orange-600" />
               </div>
-              <h3 className={`text-2xl md:text-3xl font-bold text-red-800 mb-6 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-                {language === 'hi' ? 'गहोई समाज का गौरवशाली इतिहास' : 'Proud History of Gahoi Community'}
+              <h3 className={`text-2xl md:text-3xl font-bold text-red-800 mb-6 ${languageFontClass}`}>
+                {t('home.heritage.story.title')}
               </h3>
-              <p className={`text-gray-600 text-lg mb-8 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-                {language === 'hi'
-                  ? 'गहोई समाज की समृद्ध विरासत और परंपराएं सदियों से भारतीय संस्कृति का एक महत्वपूर्ण हिस्सा रही हैं। व्यापार, शिक्षा और समाज सेवा में हमारे समाज का योगदान सराहनीय रहा है।'
-                  : 'The rich heritage and traditions of the Gahoi community have been an integral part of Indian culture for centuries. Our community has made significant contributions in business, education, and social service.'
-                }
+              <p className={`text-gray-600 text-lg mb-8 ${languageFontClass}`}>
+                {t('home.heritage.story.description')}
               </p>
             </div>
 
@@ -112,30 +85,24 @@ const CulturalHeritageSection = () => {
               <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
                 <div className="flex items-center mb-4">
                   <FaHandHoldingHeart className="w-6 h-6 text-orange-600 mr-3" />
-                  <h4 className={`text-xl font-semibold text-gray-900 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-                    {language === 'hi' ? 'सामाजिक मूल्य' : 'Community Values'}
+                  <h4 className={`text-xl font-semibold text-gray-900 ${languageFontClass}`}>
+                    {t('home.heritage.highlights.values.title')}
                   </h4>
                 </div>
-                <p className={`text-gray-600 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-                  {language === 'hi'
-                    ? 'परस्पर सहयोग, सामाजिक एकता और नैतिक मूल्यों पर आधारित हमारी समृद्ध परंपराएं'
-                    : 'Our rich traditions based on mutual cooperation, social unity, and moral values'
-                  }
+                <p className={`text-gray-600 ${languageFontClass}`}>
+                  {t('home.heritage.highlights.values.description')}
                 </p>
               </div>
 
               <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
                 <div className="flex items-center mb-4">
                   <FaBookReader className="w-6 h-6 text-orange-600 mr-3" />
-                  <h4 className={`text-xl font-semibold text-gray-900 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-                    {language === 'hi' ? 'शैक्षिक विरासत' : 'Educational Legacy'}
+                  <h4 className={`text-xl font-semibold text-gray-900 ${languageFontClass}`}>
+                    {t('home.heritage.highlights.education.title')}
                   </h4>
                 </div>
-                <p className={`text-gray-600 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
-                  {language === 'hi'
-                    ? 'शिक्षा और ज्ञान के प्रति समर्पण, जो पीढ़ियों से हमारी पहचान रहा है'
-                    : 'Dedication to education and knowledge that has been our identity for generations'
-                  }
+                <p className={`text-gray-600 ${languageFontClass}`}>
+                  {t('home.heritage.highlights.education.description')}
                 </p>
               </div>
             </div>

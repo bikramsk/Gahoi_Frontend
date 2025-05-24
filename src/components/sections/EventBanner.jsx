@@ -1,35 +1,12 @@
 import React from "react";
-import { useLanguage } from "../../context/LanguageContext";
+import { useTranslation } from "react-i18next";
 import { HandHeart, Leaf, Calendar } from 'lucide-react';
 
 const EventBanner = () => {
-  const { language } = useLanguage();
+  const { t, i18n } = useTranslation();
 
-  const eventTranslations = {
-    en: {
-      banners: "Upcoming Events",
-      banner1_title: "Community Service",
-      banner1_desc:
-        "Join hands in serving our community and preserving traditions",
-      banner2_title: "Gau Seva",
-      banner2_desc: "Participate in cow protection and service initiatives",
-      banner3_title: "Cultural Events",
-      banner3_desc: "Celebrate our rich heritage through various events",
-    },
-    hi: {
-      banners: "आगामी कार्यक्रम",
-      banner1_title: "सामुदायिक सेवा",
-      banner1_desc:
-        "हमारे समुदाय की सेवा करने और परंपराओं को संजोने के लिए हाथ मिलाएँ",
-      banner2_title: "गौ सेवा",
-      banner2_desc: "गायों की रक्षा और सेवा अभियानों में भाग लें",
-      banner3_title: "सांस्कृतिक कार्यक्रम",
-      banner3_desc:
-        "विभिन्न कार्यक्रमों के माध्यम से अपनी समृद्ध विरासत का उत्सव मनाएँ",
-    },
-  };
-
-  const et = eventTranslations[language];
+  // Language-specific font class
+  const languageFontClass = i18n.language === "hi" ? "font-hindi" : "font-english";
 
   return (
     <section className="py-12 bg-gradient-to-b from-white to-red-50">
@@ -40,28 +17,28 @@ const EventBanner = () => {
             <div className="flex justify-center mb-4">
               <HandHeart className="w-12 h-12" />
             </div>
-            <h3 className="text-xl font-bold mb-2">
-              {et.banner1_title}
+            <h3 className={`text-xl font-bold mb-2 ${languageFontClass}`}>
+              {t('home.events.community.title')}
             </h3>
-            <p>{et.banner1_desc}</p>
+            <p className={`${languageFontClass}`}>{t('home.events.community.description')}</p>
           </div>
           <div className="bg-[#FD7C00] rounded-lg p-6 text-white text-center">
             <div className="flex justify-center mb-4">
               <Leaf className="w-12 h-12" />
             </div>
-            <h3 className="text-xl font-bold mb-2">
-              {et.banner2_title}
+            <h3 className={`text-xl font-bold mb-2 ${languageFontClass}`}>
+              {t('home.events.gauSeva.title')}
             </h3>
-            <p>{et.banner2_desc}</p>
+            <p className={`${languageFontClass}`}>{t('home.events.gauSeva.description')}</p>
           </div>
           <div className="bg-red-500 rounded-lg p-6 text-white text-center">
             <div className="flex justify-center mb-4">
               <Calendar className="w-12 h-12" />
             </div>
-            <h3 className="text-xl font-bold mb-2">
-              {et.banner3_title}
+            <h3 className={`text-xl font-bold mb-2 ${languageFontClass}`}>
+              {t('home.events.cultural.title')}
             </h3>
-            <p>{et.banner3_desc}</p>
+            <p className={`${languageFontClass}`}>{t('home.events.cultural.description')}</p>
           </div>
         </div>
       </div>

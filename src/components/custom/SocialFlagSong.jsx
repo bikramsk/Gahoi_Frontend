@@ -1,19 +1,18 @@
 import React from "react";
 import { Helmet } from "react-helmet";
 import flagImage from "/flag.png";
-import { useLanguage } from "../../context/LanguageContext";
+import { useTranslation } from "react-i18next";
 
 const SocialFlagSong = () => {
-  const { language } = useLanguage();
-  const languageFontClass = "font-inter";
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Helmet>
-        <title>ध्वज गीत - गहोई समाज</title>
+        <title>{t('flagSong.meta.title')}</title>
         <meta
           name="description"
-          content="अखिल भारतीय गहोई वैश्य महासभा का ध्वज गीत"
+          content={t('flagSong.meta.description')}
         />
       </Helmet>
 
@@ -22,7 +21,7 @@ const SocialFlagSong = () => {
         <div className="absolute inset-0 bg-black opacity-50"></div>
         <img
           src="/flagsong-hero.webp"
-          alt="Flag Song Background"
+          alt={t('flagSong.hero.backgroundAlt')}
           className="absolute inset-0 w-full h-full object-cover mix-blend-overlay"
         />
         <div className="container mx-auto px-4 relative z-10">
@@ -43,11 +42,11 @@ const SocialFlagSong = () => {
                 />
               </svg>
             </div>
-            <h1 className={`text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 ${languageFontClass}`}>
-              {language === "hi" ? "अखिल भारतीय गहोई वैश्य महासभा" : "All India Gahoi Vaishya Mahasabha"}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4">
+              {t('flagSong.hero.title')}
             </h1>
-            <p className={`text-xl md:text-2xl text-white opacity-90 max-w-3xl mx-auto ${languageFontClass}`}>
-              {language === "hi" ? "ध्वज गीत" : "Flag Song"}
+            <p className="text-xl md:text-2xl text-white opacity-90 max-w-3xl mx-auto">
+              {t('flagSong.hero.subtitle')}
             </p>
           </div>
         </div>
@@ -62,7 +61,7 @@ const SocialFlagSong = () => {
               <div className="sticky top-8">
                 <img
                   src={flagImage}
-                  alt="गहोई ध्वज"
+                  alt={t('flagSong.flag.imageAlt')}
                   className="w-full h-[500px] object-contain max-w-[250px] mx-auto"
                   loading="lazy"
                 />
@@ -73,36 +72,16 @@ const SocialFlagSong = () => {
             <div className="w-full md:w-1/3 space-y-6 order-2 md:order-1">
               <div className="bg-red-50 rounded-xl p-6">
                 <div className="space-y-6">
-                  <div className="text-center bg-white rounded-lg p-4">
-                    <p className="text-orange-600 font-semibold text-lg leading-relaxed">
-                      केशरिया रंग,रवि उजियारा<br />
-                      <span className="text-red-600">झंडा ऊँचा रहे हमारा</span>
-                    </p>
-                  </div>
-                  <div className="text-center bg-white rounded-lg p-4">
-                    <p className="text-pink-600 font-semibold text-lg leading-relaxed">
-                      इस झंडे के नीचे निर्भय<br />
-                      सजग संगठन और दृढ़ निश्चय
-                    </p>
-                  </div>
-                  <div className="text-center bg-white rounded-lg p-4">
-                    <p className="text-green-600 font-semibold text-lg leading-relaxed">
-                      बढ़े प्रेम और भाई चारा<br />
-                      <span className="text-red-600">झंडा ऊँचा रहे हमारा</span>
-                    </p>
-                  </div>
-                  <div className="text-center bg-white rounded-lg p-4">
-                    <p className="text-blue-600 font-semibold text-lg leading-relaxed">
-                      इसकी शान न जाने पाये<br />
-                      चाहे जान भले ही जावे
-                    </p>
-                  </div>
-                  <div className="text-center bg-white rounded-lg p-4">
-                    <p className="text-purple-600 font-semibold text-lg leading-relaxed">
-                      उज्जवल हो यश नाम हमारा<br />
-                      <span className="text-red-600">झंडा ऊँचा रहे हमारा</span>
-                    </p>
-                  </div>
+                  {[1, 2, 3, 4, 5].map((index) => (
+                    <div key={index} className="text-center bg-white rounded-lg p-4">
+                      <p className={`text-${t(`flagSong.lyrics.left.${index}.color`)} font-semibold text-lg leading-relaxed`}>
+                        {t(`flagSong.lyrics.left.${index}.line1`)}<br />
+                        <span className={index % 2 === 1 ? "text-red-600" : ""}>
+                          {t(`flagSong.lyrics.left.${index}.line2`)}
+                        </span>
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -111,42 +90,16 @@ const SocialFlagSong = () => {
             <div className="w-full md:w-1/3 space-y-6 order-3">
               <div className="bg-red-50 rounded-xl p-6">
                 <div className="space-y-6">
-                  <div className="text-center bg-white rounded-lg p-4">
-                    <p className="text-green-600 font-semibold text-lg leading-relaxed">
-                      मिटे कुरीति नीति हो नीकी<br />
-                      इस ध्वज की छवि पड़े न फीकी
-                    </p>
-                  </div>
-                  <div className="text-center bg-white rounded-lg p-4">
-                    <p className="text-blue-600 font-semibold text-lg leading-relaxed">
-                      जब होगा गुण पूर्ण हमारा<br />
-                      <span className="text-red-600">झंडा ऊँचा रहे हमारा</span>
-                    </p>
-                  </div>
-                  <div className="text-center bg-white rounded-lg p-4">
-                    <p className="text-pink-600 font-semibold text-lg leading-relaxed">
-                      ऐसे बनकर रहे गहोई<br />
-                      हमें करे बदनाम न कोई
-                    </p>
-                  </div>
-                  <div className="text-center bg-white rounded-lg p-4">
-                    <p className="text-orange-600 font-semibold text-lg leading-relaxed">
-                      चमके सबके भाग्य सितारा<br />
-                      <span className="text-red-600">झंडा ऊँचा रहे हमारा</span>
-                    </p>
-                  </div>
-                  <div className="text-center bg-white rounded-lg p-4">
-                    <p className="text-purple-600 font-semibold text-lg leading-relaxed">
-                      आओ बंधु गहोई प्यारे<br />
-                      महासभा के राज दुलारे
-                    </p>
-                  </div>
-                  <div className="text-center bg-white rounded-lg p-4">
-                    <p className="text-blue-600 font-semibold text-lg leading-relaxed">
-                      जाति जनिन ने तुझे पुकारा<br />
-                      <span className="text-red-600">झंडा ऊँचा रहे हमारा</span>
-                    </p>
-                  </div>
+                  {[1, 2, 3, 4, 5, 6].map((index) => (
+                    <div key={index} className="text-center bg-white rounded-lg p-4">
+                      <p className={`text-${t(`flagSong.lyrics.right.${index}.color`)} font-semibold text-lg leading-relaxed`}>
+                        {t(`flagSong.lyrics.right.${index}.line1`)}<br />
+                        <span className={index % 2 === 0 ? "text-red-600" : ""}>
+                          {t(`flagSong.lyrics.right.${index}.line2`)}
+                        </span>
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -156,7 +109,7 @@ const SocialFlagSong = () => {
           <div className="text-center mt-12">
             <div className="inline-block bg-red-800 rounded-full px-8 py-3">
               <p className="text-2xl font-bold text-yellow-200">
-                जय गहोई जय भारत
+                {t('flagSong.footer.text')}
               </p>
             </div>
           </div>
@@ -166,4 +119,4 @@ const SocialFlagSong = () => {
   );
 };
 
-export default SocialFlagSong; 
+export default SocialFlagSong;

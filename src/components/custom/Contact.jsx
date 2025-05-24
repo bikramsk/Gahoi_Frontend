@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { useLanguage } from "../../context/LanguageContext";
+import { useTranslation } from "react-i18next";
 import { Helmet } from "react-helmet";
 
 const Contact = () => {
-  const { language } = useLanguage();
+  const { t, i18n } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     mobile: "",
@@ -16,7 +16,7 @@ const Contact = () => {
   const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
 
   // Language-specific font class
-  const languageFontClass = "font-inter";
+  const languageFontClass = i18n.language === "hi" ? "font-hindi" : "font-english";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,23 +36,23 @@ const Contact = () => {
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name.trim()) {
-      newErrors.name = language === "hi" ? "कृपया अपना नाम दर्ज करें" : "Please enter your name";
+      newErrors.name = t('contact.form.name.error');
     }
     if (!formData.mobile.trim()) {
-      newErrors.mobile = language === "hi" ? "कृपया अपना मोबाइल नंबर दर्ज करें" : "Please enter your mobile number";
+      newErrors.mobile = t('contact.form.mobile.error');
     } else if (!/^[0-9]{10}$/.test(formData.mobile)) {
-      newErrors.mobile = language === "hi" ? "कृपया सही मोबाइल नंबर दर्ज करें" : "Please enter a valid mobile number";
+      newErrors.mobile = t('contact.form.mobile.invalidError');
     }
     if (!formData.email.trim()) {
-      newErrors.email = language === "hi" ? "कृपया अपना ईमेल दर्ज करें" : "Please enter your email";
+      newErrors.email = t('contact.form.email.error');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = language === "hi" ? "कृपया सही ईमेल दर्ज करें" : "Please enter a valid email address";
+      newErrors.email = t('contact.form.email.invalidError');
     }
     if (!formData.subject.trim()) {
-      newErrors.subject = language === "hi" ? "कृपया विषय दर्ज करें" : "Please enter the subject";
+      newErrors.subject = t('contact.form.subject.error');
     }
     if (!formData.message.trim()) {
-      newErrors.message = language === "hi" ? "कृपया अपना संदेश दर्ज करें" : "Please enter your message";
+      newErrors.message = t('contact.form.message.error');
     }
 
     setErrors(newErrors);
@@ -91,16 +91,12 @@ const Contact = () => {
       // Show success message
       setSubmitStatus({
         type: 'success',
-        message: language === "hi" 
-          ? "संदेश सफलतापूर्वक भेज दिया गया है!" 
-          : "Message sent successfully!"
+        message: t('contact.form.success')
       });
     } catch {
       setSubmitStatus({
         type: 'error',
-        message: language === "hi"
-          ? "संदेश भेजने में त्रुटि हुई। कृपया पुनः प्रयास करें।"
-          : "Error sending message. Please try again."
+        message: t('contact.form.error')
       });
     } finally {
       setIsSubmitting(false);
@@ -129,9 +125,9 @@ const Contact = () => {
   const cardStyles = "bg-white rounded-lg p-6 md:p-8 shadow-md border-l-4 border-red-700";
   const headingStyles = `text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-3 md:mb-4 ${languageFontClass}`;
 
-  const SectionTitle = ({ title }) => (
+  const SectionTitle = ({ translationKey }) => (
     <div className="text-center mb-8">
-      <h2 className={headingStyles}>{title[language]}</h2>
+      <h2 className={headingStyles}>{t(translationKey)}</h2>
       <div className="w-24 h-1 bg-red-700 mx-auto rounded-full"></div>
     </div>
   );
@@ -145,19 +141,8 @@ const Contact = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
       <Helmet>
-        <title>
-          {language === "hi"
-            ? "संपर्क करें - गहोई समाज"
-            : "Contact Us - Gahoi Samaj"}
-        </title>
-        <meta
-          name="description"
-          content={
-            language === "hi"
-              ? "गहोई समाज से संपर्क करें। हम आपकी सहायता के लिए तत्पर हैं।"
-              : "Contact Gahoi Samaj. We are ready to help you."
-          }
-        />
+        <title>{t('contact.meta.title')}</title>
+        <meta name="description" content={t('contact.meta.description')} />
       </Helmet>
 
       {/* Hero Banner with Background Image */}
@@ -186,21 +171,14 @@ const Contact = () => {
                 />
               </svg>
             </div>
-            <h1
-              className={`text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 ${languageFontClass}`}
-            >
-              {language === "hi" ? "संपर्क करें" : "Contact Us"}
+            <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 ${languageFontClass}`}>
+              {t('contact.title')}
             </h1>
-            <p
-              className={`text-xl md:text-2xl text-white opacity-90 max-w-3xl mx-auto ${languageFontClass}`}
-            >
-              {language === "hi"
-                ? "हमसे जुड़ें और साथ मिलकर समाज का विकास करें"
-                : "Connect with us and let's develop the society together"}
+            <p className={`text-xl md:text-2xl text-white opacity-90 max-w-3xl mx-auto ${languageFontClass}`}>
+              {t('contact.subtitle')}
             </p>
           </div>
         </div>
-    
       </div>
 
       <div className="container mx-auto px-3 md:px-4 max-w-6xl -mt-6 md:-mt-10">
@@ -232,7 +210,7 @@ const Contact = () => {
                 <h3
                   className={`text-lg md:text-xl font-bold text-gray-800 ${languageFontClass}`}
                 >
-                  {language === "hi" ? "संस्थापकगण" : "Founders"}
+                  {t('contact.contactInfo.contact1.name')}
                 </h3>
               </div>
 
@@ -241,18 +219,18 @@ const Contact = () => {
                   <span
                     className={`text-gray-800 font-medium ${languageFontClass}`}
                   >
-                    {contact1.name[language]}
+                    {contact1.name[i18n.language]}
                   </span>
                 </li>
               
                 <li className="flex items-start">
                   <span className={`text-gray-700 ${languageFontClass}`}>
-                    {contact1.address1[language]}
+                    {contact1.address1[i18n.language]}
                   </span>
                 </li>
                 <li className="flex items-start">
                   <span className={`text-gray-700 ${languageFontClass}`}>
-                    {contact1.address2[language]}
+                    {contact1.address2[i18n.language]}
                   </span>
                 </li>
                 <li className="flex items-start">
@@ -350,7 +328,7 @@ const Contact = () => {
                 <h3
                   className={`text-lg md:text-xl font-bold text-gray-800 ${languageFontClass}`}
                 >
-                    {language === "hi" ? "संस्थापकगण" : "Founders"}
+                    {t('contact.contactInfo.contact2.name')}
                 </h3>
               </div>
 
@@ -359,17 +337,17 @@ const Contact = () => {
                   <span
                     className={`text-gray-800 font-medium ${languageFontClass}`}
                   >
-                    {contact2.name[language]}
+                    {contact2.name[i18n.language]}
                   </span>
                 </li>
                 <li className="flex items-start">
                   <span className={`text-gray-700 ${languageFontClass}`}>
-                    {contact2.address1[language]}
+                    {contact2.address1[i18n.language]}
                   </span>
                 </li>
                 <li className="flex items-start">
                   <span className={`text-gray-700 ${languageFontClass}`}>
-                    {contact2.address2[language]}
+                    {contact2.address2[i18n.language]}
                   </span>
                 </li>
               
@@ -426,10 +404,7 @@ const Contact = () => {
           {/* Contact Form Section */}
           <div className={sectionStyles}>
             <SectionTitle
-              title={{
-                hi: "संपर्क फॉर्म",
-                en: "Contact Form",
-              }}
+              translationKey="contact.form.title"
             />
 
             <div className="bg-white shadow-md p-6 rounded-lg border-l-4 border-red-700">
@@ -447,7 +422,7 @@ const Contact = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="relative">
                     <label className={`block text-gray-700 mb-2 font-medium ${languageFontClass}`}>
-                      {language === "hi" ? "आपका नाम" : "Your Name"}
+                      {t('contact.form.name.label')}
                     </label>
                     <input
                       type="text"
@@ -457,7 +432,7 @@ const Contact = () => {
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors.name ? "border-red-400 bg-red-50" : "border-gray-300"
                       } focus:border-red-500 focus:ring focus:ring-red-200 focus:ring-opacity-50 transition-colors duration-200`}
-                      placeholder={language === "hi" ? "अपना नाम दर्ज करें" : "Enter your name"}
+                      placeholder={t('contact.form.name.placeholder')}
                     />
                     {errors.name && (
                       <p className={`text-red-500 text-sm mt-1.5 ${languageFontClass}`}>
@@ -468,7 +443,7 @@ const Contact = () => {
 
                   <div className="relative">
                     <label className={`block text-gray-700 mb-2 font-medium ${languageFontClass}`}>
-                      {language === "hi" ? "आपका मोबाइल नंबर" : "Your Mobile Number"}
+                      {t('contact.form.mobile.label')}
                     </label>
                     <input
                       type="tel"
@@ -478,7 +453,7 @@ const Contact = () => {
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors.mobile ? "border-red-400 bg-red-50" : "border-gray-300"
                       } focus:border-red-500 focus:ring focus:ring-red-200 focus:ring-opacity-50 transition-colors duration-200`}
-                      placeholder={language === "hi" ? "अपना मोबाइल नंबर दर्ज करें" : "Enter your mobile number"}
+                      placeholder={t('contact.form.mobile.placeholder')}
                     />
                     {errors.mobile && (
                       <p className={`text-red-500 text-sm mt-1.5 ${languageFontClass}`}>
@@ -489,7 +464,7 @@ const Contact = () => {
 
                   <div className="relative">
                     <label className={`block text-gray-700 mb-2 font-medium ${languageFontClass}`}>
-                      {language === "hi" ? "आपका ईमेल" : "Your Email"}
+                      {t('contact.form.email.label')}
                     </label>
                     <input
                       type="email"
@@ -499,7 +474,7 @@ const Contact = () => {
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors.email ? "border-red-400 bg-red-50" : "border-gray-300"
                       } focus:border-red-500 focus:ring focus:ring-red-200 focus:ring-opacity-50 transition-colors duration-200`}
-                      placeholder={language === "hi" ? "अपना ईमेल दर्ज करें" : "Enter your email"}
+                      placeholder={t('contact.form.email.placeholder')}
                     />
                     {errors.email && (
                       <p className={`text-red-500 text-sm mt-1.5 ${languageFontClass}`}>
@@ -511,7 +486,7 @@ const Contact = () => {
 
                 <div className="relative">
                   <label className={`block text-gray-700 mb-2 font-medium ${languageFontClass}`}>
-                    {language === "hi" ? "विषय" : "Subject"}
+                    {t('contact.form.subject.label')}
                   </label>
                   <input
                     type="text"
@@ -521,7 +496,7 @@ const Contact = () => {
                     className={`w-full px-4 py-3 rounded-lg border ${
                       errors.subject ? "border-red-400 bg-red-50" : "border-gray-300"
                     } focus:border-red-500 focus:ring focus:ring-red-200 focus:ring-opacity-50 transition-colors duration-200`}
-                    placeholder={language === "hi" ? "विषय दर्ज करें" : "Enter subject"}
+                    placeholder={t('contact.form.subject.placeholder')}
                   />
                   {errors.subject && (
                     <p className={`text-red-500 text-sm mt-1.5 ${languageFontClass}`}>
@@ -532,7 +507,7 @@ const Contact = () => {
 
                 <div className="relative">
                   <label className={`block text-gray-700 mb-2 font-medium ${languageFontClass}`}>
-                    {language === "hi" ? "आपका संदेश" : "Your Message"}
+                    {t('contact.form.message.label')}
                   </label>
                   <textarea
                     name="message"
@@ -542,7 +517,7 @@ const Contact = () => {
                     className={`w-full px-4 py-3 rounded-lg border ${
                       errors.message ? "border-red-400 bg-red-50" : "border-gray-300"
                     } focus:border-red-500 focus:ring focus:ring-red-200 focus:ring-opacity-50 transition-colors duration-200 resize-none`}
-                    placeholder={language === "hi" ? "अपना संदेश दर्ज करें" : "Enter your message"}
+                    placeholder={t('contact.form.message.placeholder')}
                   ></textarea>
                   {errors.message && (
                     <p className={`text-red-500 text-sm mt-1.5 ${languageFontClass}`}>
@@ -564,8 +539,8 @@ const Contact = () => {
                       isSubmitting ? 'opacity-75 cursor-not-allowed' : 'group-hover:shadow-xl'
                     } ${languageFontClass}`}>
                       {isSubmitting 
-                        ? (language === "hi" ? "भेज रहा है..." : "Submitting...") 
-                        : (language === "hi" ? "भेजें" : "Submit")}
+                        ? t('contact.form.submitting') 
+                        : t('contact.form.submit')}
                     </div>
                   </button>
                 </div>
@@ -576,10 +551,7 @@ const Contact = () => {
           {/* Google Maps Section */}
           <div className={sectionStyles}>
             <SectionTitle
-              title={{
-                hi: "हमारा स्थान",
-                en: "Our Location",
-              }}
+              translationKey="contact.location.title"
             />
 
             <div className="bg-white shadow-md p-5 rounded-lg border-l-4 border-red-700 overflow-hidden">

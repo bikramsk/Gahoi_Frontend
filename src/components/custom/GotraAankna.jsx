@@ -1,10 +1,10 @@
-import { useLanguage } from '../../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import { Helmet } from "react-helmet";
 import { useState } from 'react';
 
 const GotraAankna = () => {
-  const { language } = useLanguage();
-  const languageFontClass = "font-inter";
+  const { t, i18n } = useTranslation();
+  const languageFontClass = i18n.language === "hi" ? "font-hindi" : "font-english";
   const [activeGotra, setActiveGotra] = useState(null);
 
   const gotraAnknaData = [
@@ -133,17 +133,8 @@ const GotraAankna = () => {
   return (
     <div className="min-h-screen bg-[#FFF7ED]">
       <Helmet>
-        <title>
-          {language === "hi" ? "गोत्र और आंकना - गहोई समाज" : "Gotra & Aankna - Gahoi Samaj"}
-        </title>
-        <meta
-          name="description"
-          content={
-            language === "hi"
-              ? "गहोई समाज के गोत्र और आंकना की जानकारी"
-              : "Information about Gotras and Aankna of Gahoi Samaj"
-          }
-        />
+        <title>{t('gotraAankna.meta.title')}</title>
+        <meta name="description" content={t('gotraAankna.meta.description')} />
       </Helmet>
 
       {/* Hero Banner */}
@@ -173,12 +164,10 @@ const GotraAankna = () => {
               </svg>
             </div>
             <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 sm:mb-4 ${languageFontClass}`}>
-              {language === "hi" ? "गोत्र और आंकना" : "Gotra & Aankna"}
+              {t('gotraAankna.title')}
             </h1>
             <p className={`text-lg sm:text-xl md:text-2xl text-white opacity-90 max-w-3xl mx-auto px-4 ${languageFontClass}`}>
-              {language === "hi"
-                ? "हमारी परंपरा और विरासत का महत्वपूर्ण हिस्सा"
-                : "An important part of our tradition and heritage"}
+              {t('gotraAankna.subtitle')}
             </p>
           </div>
         </div>
@@ -193,7 +182,7 @@ const GotraAankna = () => {
               <div className="bg-red-700 px-4 sm:px-6 py-3 sm:py-4 text-white">
                 <div className="flex items-center justify-between">
                   <h2 className={`text-base sm:text-xl font-bold ${languageFontClass} leading-tight`}>
-                  {language === "hi" ? "गोत्र :" : "Gotra :"} {gotra.mainGotra}
+                    {t('gotraAankna.gotraLabel')} {gotra.mainGotra}
                   </h2>
                   <span className="bg-white/20 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-sm">
                     {index + 1}
@@ -201,54 +190,51 @@ const GotraAankna = () => {
                 </div>
               </div>
 
-              {/* Rishi and Kuldevi */}
-              <div className="px-4 sm:px-6 py-3 sm:py-4 bg-red-50">
-                <div className="space-y-2">
-                  <p className={`${languageFontClass} text-sm sm:text-base text-gray-700 flex items-center`}>
-                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></span>
-                    {gotra.rishi}
+              {/* Card Body */}
+              <div className="p-4 sm:p-6">
+                {/* Rishi & Kul Devi */}
+                <div className="space-y-2 mb-4">
+                  <p className={`text-gray-800 ${languageFontClass}`}>
+                    {t('gotraAankna.rishiLabel')} {gotra.rishi}
                   </p>
-                  <p className={`${languageFontClass} text-sm sm:text-base text-gray-700 flex items-center`}>
-                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></span>
-                    {gotra.kulDevi}
+                  <p className={`text-gray-800 ${languageFontClass}`}>
+                    {t('gotraAankna.kulDeviLabel')} {gotra.kulDevi}
                   </p>
                 </div>
-              </div>
 
-              {/* Aankna List */}
-              <div className="px-4 sm:px-6 py-3 sm:py-4">
-                <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <h3 className={`text-base sm:text-lg font-medium text-gray-900 ${languageFontClass}`}>
-                    {language === "hi" ? "आंकना सूची" : "Aankna List"}
-                  </h3>
+                {/* Aankna List */}
+                <div>
                   <button
                     onClick={() => setActiveGotra(activeGotra === index ? null : index)}
-                    className="text-gray-500 p-1"
+                    className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      activeGotra === index
+                        ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                   >
-                    {activeGotra === index ? (
-                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    )}
+                    {activeGotra === index ? t('gotraAankna.hideAanknaList') : t('gotraAankna.viewAanknaList')}
                   </button>
-                </div>
-                
-                <div className={`overflow-hidden transition-all duration-300
-                                ${activeGotra === index ? 'max-h-[500px]' : 'max-h-28 sm:max-h-32'}`}>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {gotra.anknaList.map((ankna, idx) => (
-                      <div
-                        key={idx}
-                        className="px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-50 rounded-lg text-gray-700"
-                      >
-                        <span className={`block text-sm sm:text-base ${languageFontClass}`}>{ankna}</span>
-                      </div>
-                    ))}
-                  </div>
+
+                  {activeGotra === index && (
+                    <div className="mt-4 space-y-2">
+                      <h3 className={`font-medium text-gray-900 ${languageFontClass}`}>
+                        {t('gotraAankna.aanknaListLabel')}:
+                      </h3>
+                      {gotra.anknaList.length > 0 ? (
+                        <ul className="list-disc list-inside space-y-1">
+                          {gotra.anknaList.map((aankna, idx) => (
+                            <li key={idx} className={`text-gray-700 ${languageFontClass}`}>
+                              {aankna}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className={`text-gray-500 italic ${languageFontClass}`}>
+                          {t('gotraAankna.noAankna')}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -261,21 +247,19 @@ const GotraAankna = () => {
           <div className="bg-white rounded-2xl shadow-md overflow-hidden">
             <div className="bg-red-700 px-4 sm:px-6 py-3 sm:py-4">
               <h3 className={`text-xl sm:text-2xl font-bold text-white ${languageFontClass}`}>
-                {language === "hi" ? "गोत्र का महत्व" : "Importance of Gotra"}
+                {t('gotraAankna.gotraImportanceTitle')}
               </h3>
             </div>
             <div className="p-4 sm:p-6">
               <p className={`text-sm sm:text-base text-gray-700 mb-4 sm:mb-6 ${languageFontClass}`}>
-                {language === "hi" 
-                  ? "गोत्र एक प्राचीन परंपरा है जो वंश परंपरा को दर्शाती है। यह हमारी पहचान का एक महत्वपूर्ण हिस्सा है।"
-                  : "Gotra is an ancient tradition that represents lineage. It is an important part of our identity."}
+                {t('gotraAankna.gotraImportanceDescription')}
               </p>
               <ul className="space-y-2 sm:space-y-3">
                 {[
-                  language === "hi" ? "वैवाहिक संबंधों में मार्गदर्शन" : "Guidance in matrimonial relations",
-                  language === "hi" ? "वंश परंपरा की पहचान" : "Identification of lineage",
-                  language === "hi" ? "सामाजिक व्यवस्था" : "Social organization",
-                  language === "hi" ? "धार्मिक अनुष्ठानों में उपयोग" : "Use in religious rituals"
+                  t('gotraAankna.guidanceMatrimonialRelations'),
+                  t('gotraAankna.identificationLineage'),
+                  t('gotraAankna.socialOrganization'),
+                  t('gotraAankna.useReligiousRituals')
                 ].map((item, idx) => (
                   <li key={idx} className={`flex items-center text-sm sm:text-base text-gray-700 ${languageFontClass}`}>
                     <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2 sm:mr-3 flex-shrink-0"></span>
@@ -290,21 +274,19 @@ const GotraAankna = () => {
           <div className="bg-white rounded-2xl shadow-md overflow-hidden">
             <div className="bg-red-700 px-4 sm:px-6 py-3 sm:py-4">
               <h3 className={`text-xl sm:text-2xl font-bold text-white ${languageFontClass}`}>
-                {language === "hi" ? "आंकना का महत्व" : "Importance of Aankna"}
+                {t('gotraAankna.aanknaImportanceTitle')}
               </h3>
             </div>
             <div className="p-4 sm:p-6">
               <p className={`text-sm sm:text-base text-gray-700 mb-4 sm:mb-6 ${languageFontClass}`}>
-                {language === "hi"
-                  ? "आंकना हमारी पारिवारिक पहचान का एक विशिष्ट चिह्न है। यह हमारी सामाजिक व्यवस्था को मजबूत बनाता है।"
-                  : "Aankna is a unique identifier of our family identity. It strengthens our social structure."}
+                {t('gotraAankna.aanknaImportanceDescription')}
               </p>
               <ul className="space-y-2 sm:space-y-3">
                 {[
-                  language === "hi" ? "पारिवारिक पहचान" : "Family identity",
-                  language === "hi" ? "सामाजिक संबंधों का निर्धारण" : "Determination of social relations",
-                  language === "hi" ? "परंपराओं का संरक्षण" : "Preservation of traditions",
-                  language === "hi" ? "वंशावली का ज्ञान" : "Knowledge of genealogy"
+                  t('gotraAankna.familyIdentity'),
+                  t('gotraAankna.determinationSocialRelations'),
+                  t('gotraAankna.preservationTraditions'),
+                  t('gotraAankna.knowledgeGenealogy')
                 ].map((item, idx) => (
                   <li key={idx} className={`flex items-center text-sm sm:text-base text-gray-700 ${languageFontClass}`}>
                     <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2 sm:mr-3 flex-shrink-0"></span>

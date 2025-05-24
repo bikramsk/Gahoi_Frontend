@@ -1,96 +1,81 @@
 import { Link } from 'react-router-dom';
-import { useLanguage } from '../../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 const Footer = () => {
-  const { language } = useLanguage();
-  const languageFontClass = "font-inter";
-  const hindiTextClass = language === "hi" ? "text-base" : "text-sm"; 
-  
-
-  const footerTranslations = {
-    en: {
-      title: "Gahoi Shakti Jan Kalyan Samiti",
-      tagline: "Empowering our community through unity, tradition, and mutual support.",
-      quickLinks: "Quick Links",
-      aboutUs: "About Us",
-      suggestions: "Suggestions",
-      privacyPolicy: "Privacy Policy",
-      webFounderMessage: "Web Founder Message",
-      latestNews: "Latest News",
-      socialFlagSong: "Social Flag Song",
-      video: "Video",
-      rite: "Rite",
-      contact: "Contact",
-      login: "Login",
-      contactInfo: "Contact Info",
-      followUs: "Follow Us",
-      copyright: "All rights reserved.",
-      email : "Email: gahloishakti@gmail.com",
-      phone: "Phone: +91 9303872220",
-      address: " 12, Tarun Vihar Colony, Thatipur, Gwalior-474011 (M.P.)",
-      footer: "Gahoi Shakti Jan Kalyan Samiti India 2025.",
-
-    },
-    hi: {
-      title: "गहोई शक्ति जन कल्याण समिति",
-      tagline: "एकता, परंपरा और आपसी सहयोग के माध्यम से हमारे समुदाय को सशक्त बनाना।",
-      quickLinks: "त्वरित लिंक",
-      aboutUs: "हमारे बारे में",
-      suggestions: "सुझाव",
-      privacyPolicy: "गोपनीयता नीति",
-      webFounderMessage: "वेब संस्थापक संदेश",
-      latestNews: "ताज़ा खबर",
-      socialFlagSong: "सामाजिक ध्वज गीत",
-      video: "वीडियो",
-      rite: "रीति-रिवाज",
-      contact: "संपर्क",
-      login: "लॉग इन",
-      contactInfo: "संपर्क जानकारी",
-      followUs: "हमें फॉलो करें",
-      copyright: "सभी अधिकार सुरक्षित।",
-      email: "ईमेल: gahloishakti@gmail.com",
-      phone: "फ़ोन: +91 9303872220",
-      address: " 12, तरुण विहार कॉलोनी, थाटीपुर, ग्वालियर-474011 (म.प्र.)",
-      footer: "गहोई शक्ति जन कल्याण समिति भारत २०२५",
-    }
-  };
-
- 
-  const ft = footerTranslations[language];
+  const { t, i18n } = useTranslation();
+  const languageFontClass = i18n.language === "hi" ? "font-hindi" : "font-english";
+  const hindiTextClass = i18n.language === "hi" ? "text-base" : "text-sm";
 
   return (
     <footer className={`bg-red-900 text-white py-8 md:py-12 ${languageFontClass}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-screen-xl">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           <div className="text-center sm:text-left">
-            <h3 className={`text-xl ${language === "hi" ? "text-2xl" : ""} font-bold mb-4 text-yellow-100`}>{ft.title}</h3>
-            <p className={`${hindiTextClass} text-red-200`}>{ft.tagline}</p>
+            <h3 className={`text-xl ${i18n.language === "hi" ? "text-2xl" : ""} font-bold mb-4 text-yellow-100`}>
+              Gahoi Shakti Jan Kalyan Samiti
+            </h3>
+            <p className={`${hindiTextClass} text-red-200`}>
+              {t('common.tagline')}
+            </p>
           </div>
           <div className="text-center sm:text-left">
-            <h4 className={`text-lg ${language === "hi" ? "text-xl" : ""} font-semibold mb-4 text-yellow-100`}>{ft.quickLinks}</h4>
+            <h4 className={`text-lg ${i18n.language === "hi" ? "text-xl" : ""} font-semibold mb-4 text-yellow-100`}>
+              {t('footer.quickLinks')}
+            </h4>
             <ul className="flex flex-wrap justify-center sm:justify-start">
-              <li className="w-1/2 mb-2"><Link to="/about-us" className={`${hindiTextClass} text-red-100 hover:text-yellow-100 transition-colors`}>{ft.aboutUs}</Link></li>
-              {/* <li className="w-1/2 mb-2"><Link to="/suggestions" className={`${hindiTextClass} text-red-200 hover:text-yellow-100 transition-colors`}>{ft.suggestions}</Link></li> */}
-              <li className="w-1/2 mb-2"><Link to="/privacy-policy" className={`${hindiTextClass} text-red-200 hover:text-yellow-100 transition-colors`}>{ft.privacyPolicy}</Link></li>
-              <li className="w-1/2 mb-2"><Link to="/LatestNews" className={`${hindiTextClass} text-red-200 hover:text-yellow-100 transition-colors`}>{ft.webFounderMessage}</Link></li>
-              <li className="w-1/2 mb-2"><Link to="/LatestNews" className={`${hindiTextClass} text-red-200 hover:text-yellow-100 transition-colors`}>{ft.latestNews}</Link></li>
-              <li className="w-1/2 mb-2"><Link to="/SocialFlagSong" className={`${hindiTextClass} text-red-200 hover:text-yellow-100 transition-colors`}>{ft.socialFlagSong}</Link></li>
-              <li className="w-1/2 mb-2"><Link to="/Video" className={`${hindiTextClass} text-red-200 hover:text-yellow-100 transition-colors`}>{ft.video}</Link></li>
-              {/* <li className="w-1/2 mb-2"><Link to="/Rite " className={`${hindiTextClass} text-red-200 hover:text-yellow-100 transition-colors`}>{ft.rite}</Link></li> */}
-              <li className="w-1/2 mb-2"><Link to="/contact-us" className={`${hindiTextClass} text-red-100 hover:text-yellow-100 transition-colors`}>{ft.contact}</Link></li>
-              <li className="w-1/2 mb-2"><Link to="/login" className={`${hindiTextClass} text-red-100 hover:text-yellow-100 transition-colors`}>{ft.login}</Link></li>
+              <li className="w-1/2 mb-2">
+                <Link to="/about-us" className={`${hindiTextClass} text-red-100 hover:text-yellow-100 transition-colors`}>
+                  {t('navigation.about')}
+                </Link>
+              </li>
+              <li className="w-1/2 mb-2">
+                <Link to="/privacy-policy" className={`${hindiTextClass} text-red-200 hover:text-yellow-100 transition-colors`}>
+                  {t('navigation.privacyPolicy')}
+                </Link>
+              </li>
+              <li className="w-1/2 mb-2">
+                <Link to="/latestnews" className={`${hindiTextClass} text-red-200 hover:text-yellow-100 transition-colors`}>
+                  {t('navigation.latestNews')}
+                </Link>
+              </li>
+              <li className="w-1/2 mb-2">
+                <Link to="/socialflagsong" className={`${hindiTextClass} text-red-200 hover:text-yellow-100 transition-colors`}>
+                  {t('navigation.socialFlagSong')}
+                </Link>
+              </li>
+              <li className="w-1/2 mb-2">
+                <Link to="/video" className={`${hindiTextClass} text-red-200 hover:text-yellow-100 transition-colors`}>
+                  {t('navigation.video')}
+                </Link>
+              </li>
+              <li className="w-1/2 mb-2">
+                <Link to="/contact-us" className={`${hindiTextClass} text-red-100 hover:text-yellow-100 transition-colors`}>
+                  {t('navigation.contact')}
+                </Link>
+              </li>
+              <li className="w-1/2 mb-2">
+                <Link to="/login" className={`${hindiTextClass} text-red-100 hover:text-yellow-100 transition-colors`}>
+                  {t('navigation.login')}
+                </Link>
+              </li>
             </ul>
           </div>
           <div className="text-center sm:text-left">
-            <h4 className="text-lg font-semibold mb-4 text-yellow-100">{ft.contactInfo}</h4>
+            <h4 className="text-lg font-semibold mb-4 text-yellow-100">
+              {t('footer.contactUs')}
+            </h4>
             <ul className="space-y-2 text-red-200">
-              <li>{ft.email}</li>
-              <li>{ft.phone}</li>
-              <li className="text-sm sm:text-base">{ft.address}</li>
+              <li>{t('footer.email')}</li>
+              <li>{t('footer.phone')}</li>
+              <li className="text-sm sm:text-base">
+                {t('footer.address')}
+              </li>
             </ul>
           </div>
           <div className="text-center sm:text-left">
-            <h4 className="text-lg font-semibold mb-4 text-yellow-100">{ft.followUs}</h4>
+            <h4 className="text-lg font-semibold mb-4 text-yellow-100">
+              {t('footer.followUs')}
+            </h4>
             <div className="flex justify-center sm:justify-start space-x-6">
               <a href="https://www.facebook.com/Gahoisamjindia" 
                 className="group relative w-10 h-10 flex items-center justify-center rounded-full bg-red-200 hover:bg-[#1877f2] transition-colors duration-300"
@@ -117,7 +102,9 @@ const Footer = () => {
           </div>
         </div>
         <div className="border-t border-red-800 mt-8 pt-8 text-center text-red-200">
-          <p className={`${hindiTextClass} sm:${language === "hi" ? "text-base" : "text-base"}`}>&copy; {ft.footer}. {ft.copyright}</p>
+          <p className={`${hindiTextClass} sm:${i18n.language === "hi" ? "text-base" : "text-base"}`}>
+            {t('footer.copyright')} {t('footer.allRightsReserved')}
+          </p>
         </div>
       </div>
     </footer>

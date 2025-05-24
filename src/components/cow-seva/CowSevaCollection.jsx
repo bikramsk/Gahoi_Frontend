@@ -9,8 +9,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import * as XLSX from 'xlsx';
-
-import { useLanguage } from "../../context/LanguageContext";
+import { useTranslation } from 'react-i18next';
 
 const CowIcon = ({ size = 24, className = "" }) => (
   <svg
@@ -31,7 +30,7 @@ const CowIcon = ({ size = 24, className = "" }) => (
 );
 
 const CowSevaCollection = () => {
-  const { language } = useLanguage();
+  const { t, i18n } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("donations");
@@ -182,26 +181,26 @@ const CowSevaCollection = () => {
 
   const handleExportDonations = useCallback(() => {
     const donationsData = filteredDonations.map(donation => ({
-      [language === "hi" ? "दानकर्ता का नाम" : "Donor Name"]: donation.Name,
-      [language === "hi" ? "राशि" : "Amount"]: donation.Amount,
-      [language === "hi" ? "तारीख" : "Date"]: new Date(donation.Date).toLocaleDateString(),
-      [language === "hi" ? "स्थान" : "Place"]: donation.place,
-      [language === "hi" ? "उद्देश्य" : "Purpose"]: donation.purpose
+      [t('cowSevaCollection.donations.columns.name')]: donation.Name,
+      [t('cowSevaCollection.donations.columns.amount')]: donation.Amount,
+      [t('cowSevaCollection.donations.columns.date')]: new Date(donation.Date).toLocaleDateString(),
+      [t('cowSevaCollection.donations.columns.place')]: donation.place,
+      [t('cowSevaCollection.donations.columns.purpose')]: donation.purpose
     }));
-    exportToExcel(donationsData, language === "hi" ? "दान-रिकॉर्ड" : "donation-records");
-  }, [filteredDonations, language]);
+    exportToExcel(donationsData, i18n.language === "hi" ? "दान-रिकॉर्ड" : "donation-records");
+  }, [filteredDonations, t, i18n.language]);
 
   const handleExportExpenses = useCallback(() => {
     const expensesData = content.monthlyExpenses.map(expense => ({
-      [language === "hi" ? "महीना" : "Month"]: expense.Month,
-      [language === "hi" ? "चारा" : "Feed"]: expense.feed,
-      [language === "hi" ? "चिकित्सा" : "Medical"]: expense.medical,
-      [language === "hi" ? "रखरखाव" : "Maintenance"]: expense.maintenance,
-      [language === "hi" ? "कर्मचारी" : "Staff"]: expense.staff,
-      [language === "hi" ? "कुल" : "Total"]: expense.total
+      [t('cowSevaCollection.expenses.columns.month')]: expense.Month,
+      [t('cowSevaCollection.expenses.columns.feed')]: expense.feed,
+      [t('cowSevaCollection.expenses.columns.medical')]: expense.medical,
+      [t('cowSevaCollection.expenses.columns.maintenance')]: expense.maintenance,
+      [t('cowSevaCollection.expenses.columns.staff')]: expense.staff,
+      [t('cowSevaCollection.expenses.columns.total')]: expense.total
     }));
-    exportToExcel(expensesData, language === "hi" ? "मासिक-खर्च" : "monthly-expenses");
-  }, [content.monthlyExpenses, language]);
+    exportToExcel(expensesData, i18n.language === "hi" ? "मासिक-खर्च" : "monthly-expenses");
+  }, [content.monthlyExpenses, t, i18n.language]);
 
   const exportToExcel = (data, fileName) => {
     const ws = XLSX.utils.json_to_sheet(data);
@@ -222,7 +221,7 @@ const CowSevaCollection = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-red-500">
-          {language === "hi" ? "डेटा लोड करने में त्रुटि" : "Error loading data"}: {error}
+          {t('cowSevaCollection.error', { message: error })}
         </div>
       </div>
     );
@@ -234,15 +233,11 @@ const CowSevaCollection = () => {
         {/* Title and Description */}
         <div className="mb-6 text-center">
           <h2 className="text-2xl md:text-4xl font-bold text-gray-800 mb-2">
-            {language === "hi" ? "गौ सेवा संग्रह" : "Cow Seva Collection"}
+            {t('cowSevaCollection.title')}
           </h2>
           <p className="text-gray-600">
-            {language === "hi" 
-              ? "हमारी गौशाला में किए गए कार्यों का संग्रह" 
-              : "Collection of works done in our gaushala"
-            }
+            {t('cowSevaCollection.description')}
           </p>
-         
         </div>
         
         {/* Summary Cards */}
@@ -250,7 +245,7 @@ const CowSevaCollection = () => {
           <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-base sm:text-lg font-medium text-gray-700">
-                {language === "hi" ? "कुल दान" : "Total Donations"}
+                {t('cowSevaCollection.summaryCards.totalDonations.title')}
               </h3>
               <IndianRupee className="text-orange-500" size={20} />
             </div>
@@ -258,14 +253,14 @@ const CowSevaCollection = () => {
               ₹{totalDonations.toLocaleString()}
             </p>
             <p className="text-xs sm:text-sm text-gray-500 mt-2">
-              {language === "hi" ? "पिछले 30 दिन" : "Last 30 days"}
+              {t('cowSevaCollection.summaryCards.totalDonations.period')}
             </p>
           </div>
 
           <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-base sm:text-lg font-medium text-gray-700">
-                {language === "hi" ? "कुल व्यय" : "Total Expenses"}
+                {t('cowSevaCollection.summaryCards.totalExpenses.title')}
               </h3>
               <Calendar className="text-orange-500" size={20} />
             </div>
@@ -273,27 +268,27 @@ const CowSevaCollection = () => {
               ₹{totalYearlyExpenses.toLocaleString()}
             </p>
             <p className="text-xs sm:text-sm text-gray-500 mt-2">
-              {language === "hi" ? "वर्ष के लिए" : "Year to date"}
+              {t('cowSevaCollection.summaryCards.totalExpenses.period')}
             </p>
           </div>
 
-           <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-base sm:text-lg font-medium text-gray-700">
-                {language === "hi" ? "संरक्षित गायें" : "Cows Sheltered"}
+                {t('cowSevaCollection.summaryCards.cowsSheltered.title')}
               </h3>
               <CowIcon className="text-orange-500" size={20} />
             </div>
             <p className="text-2xl sm:text-3xl font-bold text-orange-600">550</p>
             <p className="text-xs sm:text-sm text-gray-500 mt-2">
-              {language === "hi" ? "सभी केंद्रों में" : "cross all centers"}
+              {t('cowSevaCollection.summaryCards.cowsSheltered.period')}
             </p>
-          </div> 
+          </div>
 
           <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-base sm:text-lg font-medium text-gray-700">
-                {language === "hi" ? "सेवा केंद्र" : "Seva Centers"}
+                {t('cowSevaCollection.summaryCards.sevaCenters.title')}
               </h3>
               <HousePlus className="text-orange-500" size={20} />
             </div>
@@ -301,7 +296,7 @@ const CowSevaCollection = () => {
               {content.sevaPlaces.length}
             </p>
             <p className="text-xs sm:text-sm text-gray-500 mt-2">
-              {language === "hi" ? "सक्रिय स्थान" : "Active locations"}
+              {t('cowSevaCollection.summaryCards.sevaCenters.period')}
             </p>
           </div>
         </div>
@@ -317,7 +312,7 @@ const CowSevaCollection = () => {
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
-              {language === "hi" ? "दान" : "Donations"}
+              {t('cowSevaCollection.tabs.donations')}
             </button>
             <button
               onClick={() => setActiveTab("expenses")}
@@ -327,7 +322,7 @@ const CowSevaCollection = () => {
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
-              {language === "hi" ? "व्यय" : "Expenses"}
+              {t('cowSevaCollection.tabs.expenses')}
             </button>
             <button
               onClick={() => setActiveTab("places")}
@@ -337,7 +332,7 @@ const CowSevaCollection = () => {
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
-              {language === "hi" ? "सेवा स्थान" : "Seva Places"}
+              {t('cowSevaCollection.tabs.places')}
             </button>
           </nav>
         </div>
@@ -348,7 +343,7 @@ const CowSevaCollection = () => {
             <div className="p-4 sm:p-6 border-b border-gray-200">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-lg sm:text-xl font-bold text-gray-800">
-                  {language === "hi" ? "मासिक खर्च" : "Monthly Expenses"}
+                  {t('cowSevaCollection.expenses.title')}
                 </h2>
                 <div className="flex space-x-2 sm:space-x-4">
                   <button 
@@ -356,14 +351,14 @@ const CowSevaCollection = () => {
                     className="border border-gray-300 rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 flex items-center space-x-2 hover:bg-gray-50 transition text-sm"
                   >
                     <Download size={16} />
-                    <span className="hidden sm:inline">{language === "hi" ? "रिपोर्ट निर्यात करें" : "Export Report"}</span>
-                    <span className="sm:hidden">{language === "hi" ? "निर्यात" : "Export"}</span>
+                    <span className="hidden sm:inline">{t('cowSevaCollection.expenses.exportReport')}</span>
+                    <span className="sm:hidden">{t('cowSevaCollection.expenses.export')}</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Mobile Expenses Cards  */}
+            {/* Mobile Expenses Cards */}
             <div className="sm:hidden">
               {content.monthlyExpenses.map((expense, index) => (
                 <div key={index} className="p-4 border-b border-gray-200">
@@ -373,19 +368,19 @@ const CowSevaCollection = () => {
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">{language === "hi" ? "चारा" : "Feed"}:</span>
+                      <span className="text-gray-500">{t('cowSevaCollection.expenses.columns.feed')}:</span>
                       <span>₹{expense.feed.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">{language === "hi" ? "चिकित्सा" : "Medical"}:</span>
+                      <span className="text-gray-500">{t('cowSevaCollection.expenses.columns.medical')}:</span>
                       <span>₹{expense.medical.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">{language === "hi" ? "रखरखाव" : "Maintenance"}:</span>
+                      <span className="text-gray-500">{t('cowSevaCollection.expenses.columns.maintenance')}:</span>
                       <span>₹{expense.maintenance.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">{language === "hi" ? "कर्मचारी" : "Staff"}:</span>
+                      <span className="text-gray-500">{t('cowSevaCollection.expenses.columns.staff')}:</span>
                       <span>₹{expense.staff.toLocaleString()}</span>
                     </div>
                   </div>
@@ -393,46 +388,28 @@ const CowSevaCollection = () => {
               ))}
             </div>
 
-            {/* Desktop Table (hidden on small screens) */}
+            {/* Desktop Table */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th
-                      scope="col"
-                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      {language === "hi" ? "महीना" : "Month"}
+                    <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('cowSevaCollection.expenses.columns.month')}
                     </th>
-                    <th
-                      scope="col"
-                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      {language === "hi" ? "चारा" : "Feed"}
+                    <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('cowSevaCollection.expenses.columns.feed')}
                     </th>
-                    <th
-                      scope="col"
-                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      {language === "hi" ? "चिकित्सा" : "Medical"}
+                    <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('cowSevaCollection.expenses.columns.medical')}
                     </th>
-                    <th
-                      scope="col"
-                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      {language === "hi" ? "रखरखाव" : "Maintenance"}
+                    <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('cowSevaCollection.expenses.columns.maintenance')}
                     </th>
-                    <th
-                      scope="col"
-                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      {language === "hi" ? "कर्मचारी" : "Staff"}
+                    <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('cowSevaCollection.expenses.columns.staff')}
                     </th>
-                    <th
-                      scope="col"
-                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      {language === "hi" ? "कुल" : "Total"}
+                    <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('cowSevaCollection.expenses.columns.total')}
                     </th>
                   </tr>
                 </thead>
@@ -471,14 +448,10 @@ const CowSevaCollection = () => {
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4">
-                {language === "hi"
-                  ? "हमारी गौ सेवा केंद्र"
-                  : "Our Cow Seva Centers"}
+                {t('cowSevaCollection.sevaPlaces.title')}
               </h2>
               <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
-                {language === "hi"
-                  ? "हम कई गौशालाएँ (गायों के आश्रय स्थल) चलाते हैं।"
-                  : "We maintain several gaushalas (cow shelters)."}
+                {t('cowSevaCollection.sevaPlaces.description')}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -507,16 +480,15 @@ const CowSevaCollection = () => {
                         {place.address}
                       </p>
                       <div className="space-y-1 sm:space-y-2">
-                       
                         <div className="flex justify-between">
                           <span className="text-gray-500 text-xs sm:text-sm">
-                            {language === "hi" ? "जिम्मेदार:" : "In Charge:"}
+                            {t('cowSevaCollection.sevaPlaces.details.inCharge')}:
                           </span>
                           <span className="font-medium text-xs sm:text-sm">{place.inCharge}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-500 text-xs sm:text-sm">
-                            {language === "hi" ? "संपर्क:" : "Contact:"}
+                            {t('cowSevaCollection.sevaPlaces.details.contact')}:
                           </span>
                           <span className="font-medium text-xs sm:text-sm">{place.contact}</span>
                         </div>
@@ -527,7 +499,7 @@ const CowSevaCollection = () => {
                         rel="noopener noreferrer" 
                         className="mt-3 sm:mt-4 w-full bg-orange-100 text-orange-700 rounded-lg py-1.5 sm:py-2 hover:bg-orange-200 transition font-medium text-xs sm:text-sm inline-block text-center"
                       >
-                        {language === "hi" ? "केंद्र पर जाएं" : "Visit Center"}
+                        {t('cowSevaCollection.sevaPlaces.details.visitButton')}
                       </a>
                     </div>
                   </div>
@@ -542,17 +514,13 @@ const CowSevaCollection = () => {
             <div className="p-4 sm:p-6 border-b border-gray-200">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-lg sm:text-xl font-bold text-gray-800">
-                  {language === "hi" ? "दान रिकॉर्ड" : "Donation Records"}
+                  {t('cowSevaCollection.donations.title')}
                 </h2>
                 <div className="flex flex-col sm:flex-row gap-3 sm:space-x-4 w-full sm:w-auto">
                   <div className="relative w-full sm:w-auto">
                     <input
                       type="text"
-                      placeholder={
-                        language === "hi"
-                          ? "दान खोजें..."
-                          : "Search donations..."
-                      }
+                      placeholder={t('cowSevaCollection.donations.searchPlaceholder')}
                       className="w-full sm:w-auto border border-gray-300 rounded-lg px-4 py-1.5 sm:py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
@@ -567,7 +535,7 @@ const CowSevaCollection = () => {
                     className="border border-gray-300 rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 flex items-center justify-center space-x-2 hover:bg-gray-50 transition text-sm"
                   >
                     <Download size={16} />
-                    <span>{language === "hi" ? "निर्यात" : "Export"}</span>
+                    <span>{t('cowSevaCollection.donations.export')}</span>
                   </button>
                 </div>
               </div>
@@ -575,61 +543,29 @@ const CowSevaCollection = () => {
 
             {/* Mobile Donation Cards */}
             <div className="sm:hidden">
-              {filteredDonations.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage).map((donation) => (
-                <div key={donation.id} className="p-4 border-b border-gray-200">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="font-medium text-gray-900 text-sm">
-                      {donation.Name}
+              {filteredDonations
+                .slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)
+                .map((donation) => (
+                  <div key={donation.id} className="p-4 border-b border-gray-200">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="font-medium text-gray-900 text-sm">
+                        {donation.Name}
+                      </div>
+                      <div className="text-gray-900 font-bold text-sm">
+                        ₹{donation.Amount.toLocaleString()}
+                      </div>
                     </div>
-                    <div className="text-gray-900 font-bold text-sm">
-                      ₹{donation.Amount.toLocaleString()}
+                    <div className="flex justify-between text-xs text-gray-500 mb-2">
+                      <div>{new Date(donation.Date).toLocaleDateString()}</div>
+                      <div>{donation.place}</div>
+                    </div>
+                    <div className="flex justify-end">
+                      <span className="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-orange-100 text-orange-800">
+                        {donation.purpose}
+                      </span>
                     </div>
                   </div>
-                  <div className="flex justify-between text-xs text-gray-500 mb-2">
-                    <div>{new Date(donation.Date).toLocaleDateString()}</div>
-                    <div>{donation.place}</div>
-                  </div>
-                  <div className="flex justify-end">
-                    <span className="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-orange-100 text-orange-800">
-                      {donation.purpose}
-                    </span>
-                  </div>
-                </div>
-              ))}
-              
-              {/* Pagination Controls - Mobile */}
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-                <div className="flex items-center text-sm text-gray-500">
-                  {language === "hi" 
-                    ? `${(currentPage - 1) * entriesPerPage + 1}-${Math.min((currentPage - 1) * entriesPerPage + entriesPerPage, filteredDonations.length)} कुल ${filteredDonations.length} में से`
-                    : `${(currentPage - 1) * entriesPerPage + 1}-${Math.min((currentPage - 1) * entriesPerPage + entriesPerPage, filteredDonations.length)} of ${filteredDonations.length}`
-                  }
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={handlePreviousPage}
-                    disabled={currentPage === 1}
-                    className={`p-1 rounded ${
-                      currentPage === 1
-                        ? 'text-gray-400 cursor-not-allowed'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    <ChevronLeft size={20} />
-                  </button>
-                  <button
-                    onClick={handleNextPage}
-                    disabled={currentPage === Math.ceil(filteredDonations.length / entriesPerPage)}
-                    className={`p-1 rounded ${
-                      currentPage === Math.ceil(filteredDonations.length / entriesPerPage)
-                        ? 'text-gray-400 cursor-not-allowed'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    <ChevronRight size={20} />
-                  </button>
-                </div>
-              </div>
+                ))}
             </div>
 
             {/* Desktop Table */}
@@ -637,105 +573,93 @@ const CowSevaCollection = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      {language === "hi" ? "दानकर्ता का नाम" : "Donor Name"}
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('cowSevaCollection.donations.columns.name')}
                     </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      {language === "hi" ? "राशि" : "Amount"}
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('cowSevaCollection.donations.columns.amount')}
                     </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      {language === "hi" ? "तारीख" : "Date"}
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('cowSevaCollection.donations.columns.date')}
                     </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      {language === "hi" ? "स्थान" : "Place"}
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('cowSevaCollection.donations.columns.place')}
                     </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      {language === "hi" ? "उद्देश्य" : "Purpose"}
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('cowSevaCollection.donations.columns.purpose')}
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredDonations.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage).map((donation) => (
-                    <tr key={donation.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-medium text-gray-900">
-                          {donation.Name}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-gray-900">
-                          ₹{donation.Amount.toLocaleString()}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                        {new Date(donation.Date).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                        {donation.place}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
-                          {donation.purpose}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredDonations
+                    .slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)
+                    .map((donation) => (
+                      <tr key={donation.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="font-medium text-gray-900">
+                            {donation.Name}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-gray-900">
+                            ₹{donation.Amount.toLocaleString()}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                          {new Date(donation.Date).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                          {donation.place}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                            {donation.purpose}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
-              
-              {/* Pagination Controls - Desktop */}
-              <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200">
-                <div className="flex items-center text-sm text-gray-500">
-                  {language === "hi" 
-                    ? `${(currentPage - 1) * entriesPerPage + 1}-${Math.min((currentPage - 1) * entriesPerPage + entriesPerPage, filteredDonations.length)} कुल ${filteredDonations.length} में से`
-                    : `${(currentPage - 1) * entriesPerPage + 1}-${Math.min((currentPage - 1) * entriesPerPage + entriesPerPage, filteredDonations.length)} of ${filteredDonations.length}`
-                  }
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={handlePreviousPage}
-                    disabled={currentPage === 1}
-                    className={`px-3 py-1 rounded border ${
-                      currentPage === 1
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-1">
-                      <ChevronLeft size={16} />
-                      <span>{language === "hi" ? "पिछला" : "Previous"}</span>
-                    </div>
-                  </button>
-                  <button
-                    onClick={handleNextPage}
-                    disabled={currentPage === Math.ceil(filteredDonations.length / entriesPerPage)}
-                    className={`px-3 py-1 rounded border ${
-                      currentPage === Math.ceil(filteredDonations.length / entriesPerPage)
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-1">
-                      <span>{language === "hi" ? "अगला" : "Next"}</span>
-                      <ChevronRight size={16} />
-                    </div>
-                  </button>
-                </div>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-t border-gray-200">
+              <div className="flex items-center text-sm text-gray-500">
+                {t('cowSevaCollection.pagination.showing', {
+                  start: (currentPage - 1) * entriesPerPage + 1,
+                  end: Math.min(currentPage * entriesPerPage, filteredDonations.length),
+                  total: filteredDonations.length
+                })}
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-1 rounded border ${
+                    currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center space-x-1">
+                    <ChevronLeft size={16} />
+                    <span>{t('cowSevaCollection.pagination.previous')}</span>
+                  </div>
+                </button>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === Math.ceil(filteredDonations.length / entriesPerPage)}
+                  className={`px-3 py-1 rounded border ${
+                    currentPage === Math.ceil(filteredDonations.length / entriesPerPage)
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center space-x-1">
+                    <span>{t('cowSevaCollection.pagination.next')}</span>
+                    <ChevronRight size={16} />
+                  </div>
+                </button>
               </div>
             </div>
           </div>
