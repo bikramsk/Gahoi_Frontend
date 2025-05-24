@@ -1,6 +1,8 @@
 import React from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const SuccessStories = () => {
+  const { language } = useLanguage();
   const successStories = [
     {
       id: 1,
@@ -8,7 +10,7 @@ const SuccessStories = () => {
       groomName: 'Rahul Gahoi',
       brideName: 'Priya Gupta',
       date: 'Married on Dec 15, 2023',
-      story: 'Found each other through Gahoi Samaj, and it was an instant connection. Our families matched perfectly, and here we are, living our dream together.',
+      story: 'Found each other through Gahoi Samaj community. Our families shared similar values and traditions, making it a perfect match.',
       location: 'Gwalior, MP'
     },
     {
@@ -17,7 +19,7 @@ const SuccessStories = () => {
       groomName: 'Aditya Neekhra',
       brideName: 'Sneha Gahoi',
       date: 'Married on Nov 20, 2023',
-      story: 'Our journey began with a simple profile match on Gahoi Matrimony. Today, were blessed to have found our perfect match.',
+      story: 'Our journey began at a Gahoi Samaj community event. We are grateful to the community for bringing us together.',
       location: 'Indore, MP'
     },
     {
@@ -26,7 +28,7 @@ const SuccessStories = () => {
       groomName: 'Vikram Gahoi',
       brideName: 'Nisha Gupta',
       date: 'Married on Oct 5, 2023',
-      story: 'Thanks to Gahoi Samaj for bringing us together. Our traditional values and modern outlook matched perfectly.',
+      story: 'Thanks to Gahoi Samaj for introducing us. Our shared community values and modern outlook made us perfect for each other.',
       location: 'Bhopal, MP'
     },
     {
@@ -35,7 +37,7 @@ const SuccessStories = () => {
       groomName: 'Ankit Gupta',
       brideName: 'Riya Gahoi',
       date: 'Married on Sept 12, 2023',
-      story: 'From the first meeting through Gahoi Matrimony to our wedding day, every moment has been magical.',
+      story: 'Met through Gahoi Samaj community gatherings. Every moment since has been filled with joy and understanding.',
       location: 'Jabalpur, MP'
     }
   ];
@@ -44,26 +46,16 @@ const SuccessStories = () => {
     <div className="py-16 bg-gradient-to-b from-white to-red-50">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-16 relative">
-          <div className="absolute left-1/2 -translate-x-1/2 top-0 w-24 h-24 bg-red-100 rounded-full opacity-20"></div>
-          <div className="relative">
-            <div className="flex justify-center mb-4">
-              <div className="relative">
-                <div className="absolute -inset-4 bg-red-100 rounded-full animate-pulse opacity-20"></div>
-                <img 
-                  src="/ring.png" 
-                  alt="Wedding Rings" 
-                  className="w-12 h-12 object-contain relative z-10"
-                />
-              </div>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-red-800 mb-4">
-              Success Stories
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg italic">
-              Beautiful beginnings of forever after through Gahoi Matrimony
-            </p>
-          </div>
+        <div className="text-center mb-12">
+          <h2 className={`text-3xl md:text-4xl font-bold text-red-800 mb-4 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
+            {language === 'hi' ? 'सफलता की कहानियां' : 'Success Stories'}
+          </h2>
+          <p className={`text-lg text-gray-600 max-w-2xl mx-auto ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
+            {language === 'hi' 
+              ? 'गहोई समाज के माध्यम से मिले सफल जीवन साथी'
+              : 'Successful matches through Gahoi Samaj'
+            }
+          </p>
         </div>
 
         {/* Success Stories Grid */}
@@ -71,45 +63,31 @@ const SuccessStories = () => {
           {successStories.map((story) => (
             <div 
               key={story.id} 
-              className="bg-white rounded-2xl overflow-hidden shadow-lg transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+              className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
             >
-            
-              <div className="relative h-64 overflow-hidden">
+              <div className="relative h-64">
                 <img 
                   src={story.coupleImage}
                   alt={`${story.groomName} & ${story.brideName}`}
-                  className="w-full h-full object-cover object-top transform transition-transform duration-700 hover:scale-110"
+                  className="w-full h-full object-cover object-top"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                 <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <div className="text-xs font-medium text-red-300">{story.date}</div>
-                  <div className="font-semibold">{story.location}</div>
+                  <div className="text-sm">{story.date}</div>
+                  <div className="font-medium">{story.location}</div>
                 </div>
               </div>
-
-            
+              
               <div className="p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-2">
-                  {story.groomName} <span className="text-red-600">&</span> {story.brideName}
+                <h3 className={`text-lg font-bold text-gray-900 mb-2 ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
+                  {story.groomName} & {story.brideName}
                 </h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  {story.story}
+                <p className={`text-gray-600 text-sm ${language === 'hi' ? 'font-hindi' : 'font-english'}`}>
+                  {story.story.replace(/Gahoi Samaj/g, 'Gahoi Samaj')}
                 </p>
               </div>
-
-              {/* Decorative Elements */}
-              <div className="absolute top-2 right-2 w-8 h-8 border-2 border-white rounded-full opacity-30"></div>
-              <div className="absolute bottom-2 left-2 w-6 h-6 border-2 border-red-300 rounded-full opacity-30"></div>
             </div>
           ))}
-        </div>
-
-        {/* Decorative Bottom Element */}
-        <div className="flex justify-center mt-16">
-          <div className="relative">
-            <div className="absolute inset-0 bg-red-100 rounded-full animate-ping opacity-20"></div>
-            <div className="w-16 h-1 bg-red-200 rounded-full"></div>
-          </div>
         </div>
       </div>
     </div>

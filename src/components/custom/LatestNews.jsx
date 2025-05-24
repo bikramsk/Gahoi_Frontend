@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import { useLanguage } from "../../context/LanguageContext";
 
-const API_URL = "http://localhost:1337";
+const API_URL = import.meta.env.VITE_PUBLIC_STRAPI_API_URL || "http://localhost:1337";
 
 const LatestNews = () => {
   const { language } = useLanguage();
