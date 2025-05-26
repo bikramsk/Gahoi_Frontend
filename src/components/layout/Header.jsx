@@ -76,8 +76,8 @@ const Header = () => {
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-4" ref={dropdownRef}>
-            <div className="flex space-x-2 lg:space-x-4 items-center mt-8">
+          <div className="hidden md:flex items-center space-x-4">
+            <div className="flex space-x-2 lg:space-x-4 items-center">
               {menuItems.map((item) => (
                 <div 
                   key={item.to}
@@ -92,28 +92,29 @@ const Header = () => {
                 </div>
               ))}
             </div>
-            <div className="ml-4 mt-8">
+            <div className="ml-4">
               <LanguageSwitcher />
             </div>
           </div>
 
           {/* Mobile Menu */}
           {isMenuOpen && (
-            <div className="md:hidden fixed inset-0 top-[88px] bg-gray-900/95 backdrop-blur-sm">
+            <div className="md:hidden fixed inset-0 top-[88px] bg-red-800/95 backdrop-blur-sm z-40">
               <div className="container mx-auto px-4 py-4">
-                {menuItems.map((item) => (
-                  <div key={item.to} className="mb-2">
+                <div className="flex flex-col space-y-4">
+                  {menuItems.map((item) => (
                     <Link
+                      key={item.to}
                       to={item.to}
-                      className={`${hindiTextClass} block text-white hover:text-yellow-200 py-2`}
+                      className={`${hindiTextClass} block text-white hover:text-yellow-200 py-2 text-lg font-medium`}
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {item.label}
                     </Link>
+                  ))}
+                  <div className="mt-4 border-t border-red-700 pt-4">
+                    <LanguageSwitcher />
                   </div>
-                ))}
-                <div className="mt-4 border-t border-gray-700 pt-4">
-                  <LanguageSwitcher />
                 </div>
               </div>
             </div>
