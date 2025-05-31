@@ -51,7 +51,7 @@ const Header = () => {
     <header className="absolute top-0 left-0 right-0 z-50">
       <nav className="container mx-auto px-4 py-2">
         <div className="flex justify-between items-center">
-          <Link to="/" className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-3 z-50">
             <img 
               src="/logo.png" 
               alt="Gahoi Logo" 
@@ -62,7 +62,7 @@ const Header = () => {
           <div className="flex items-center space-x-3">
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden text-white p-2 hover:bg-white/10 rounded-lg transition-colors"
+              className="md:hidden text-white p-2 hover:bg-white/10 rounded-lg transition-colors z-50"
               aria-label="Toggle menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,7 +99,10 @@ const Header = () => {
 
           {/* Mobile Menu */}
           {isMenuOpen && (
-            <div className="md:hidden fixed inset-0 top-[88px] bg-red-800/95 backdrop-blur-sm z-40">
+            <div 
+              ref={dropdownRef}
+              className="md:hidden fixed inset-0 top-[88px] bg-red-800/95 backdrop-blur-sm z-40"
+            >
               <div className="container mx-auto px-4 py-4">
                 <div className="flex flex-col space-y-4">
                   {menuItems.map((item) => (
