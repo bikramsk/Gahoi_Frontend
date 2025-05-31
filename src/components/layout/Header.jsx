@@ -9,8 +9,8 @@ const Header = () => {
   const { t, i18n } = useTranslation();
 
   const hindiTextClass = i18n.language === "hi" 
-    ? "text-base lg:text-lg" 
-    : "text-sm md:text-xs lg:text-base";
+    ? "text-base lg:text-lg font-hindi" 
+    : "text-sm md:text-xs lg:text-base font-english";
 
   useEffect(() => {
     if (isMenuOpen) {
