@@ -93,8 +93,6 @@ export const validateFamilyMember = (member, index) => {
     if (!member.name) errors[`familyDetails.${index}.name`] = 'Name is required';
     if (!member.gender) errors[`familyDetails.${index}.gender`] = 'Gender is required';
     if (!member.age) errors[`familyDetails.${index}.age`] = 'Age is required';
-    if (!member.education) errors[`familyDetails.${index}.education`] = 'Education is required';
-    if (!member.occupation) errors[`familyDetails.${index}.occupation`] = 'Occupation is required';
     if (!member.maritalStatus) errors[`familyDetails.${index}.maritalStatus`] = 'Marital status is required';
   }
   

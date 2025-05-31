@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState, useEffect, useCallback, useMemo } from "react";import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import PhotoUpload from "./PhotoUpload";
 import {
   STATE_TO_ASSEMBLIES,
@@ -28,10 +28,10 @@ import {
 import {
   STATES,
   STATE_TO_DISTRICTS,
-  STATE_TO_CITIES,
+  DISTRICT_TO_CITIES,
 } from "../../constants/locationData";
 
-// Add these constants at the top of the file after imports
+
 export const CHAURASI_PANCHAYAT_NAMES = [
   "Gahoi Vaishya Panchayat",
   "Shri Gahoi Vaishya Sabha",
@@ -40,17 +40,51 @@ export const CHAURASI_PANCHAYAT_NAMES = [
 
 const LOCAL_PANCHAYATS = {
   "Chambal Regional Assembly": ["Morena", "Bhind", "Gwalior"],
-  "Central Malwa Regional Assembly": ["Indore", "Dewas", "Ujjain"],
-  "Mahakaushal Regional Assembly": ["Jabalpur", "Katni", "Rewa"],
-  "Vindhya Regional Assembly": ["Satna", "Shahdol", "Sidhi"],
+  "Central Malwa Regional Assembly": ["Indore", "Dewas", "Ujjain", "Bhopal", "Vidisha", "Raisen"],
+  "Mahakaushal Regional Assembly": ["Jabalpur", "Katni", "Rewa", ""],
+  "Vindhya Regional Assembly": ["Satna", "Shahdol", "Sidhi", "Chhatarpur", "Panna", "Rewa"],
   "Bundelkhand Regional Assembly": ["Sagar", "Damoh", "Chhatarpur"],
   "Chaurasi Regional Assembly": ["Bhopal", "Vidisha", "Raisen"],
+  "Southern Regional Assembly": ["Pune", "Mumbai", "Nagpur", "Amravati", "Chalisgaon", "Dhuliya"]
 };
 
 const SUB_LOCAL_PANCHAYATS = {
+  Pune: ["Pune City", "Pimpri-Chinchwad", "Khadki", "Hadapsar"],
+  Mumbai: ["South Mumbai", "Andheri", "Borivali", "Thane", "Navi Mumbai"],
+  Nagpur: ["Nagpur City", "Kamptee", "Hingna"],
+  Amravati: ["Amravati City", "Badnera", "Achalpur"],
+  Chalisgaon: ["Chalisgaon"],
+  Dhuliya: ["Dhuliya"],
   Morena: ["Morena City", "Ambah", "Porsa"],
   Bhind: ["Bhind City", "Ater", "Lahar"],
   Gwalior: ["Gwalior City", "Dabra", "Bhitarwar"],
+  Patna: ["Patna City"],
+  Durg: ["Durg"],
+  Rajnandgaon: ["Rajnandgaon"],
+  Dhamtari: ["Dhamtari"],
+  Raipur: ["Raipur"],
+  Bilaspur: ["Bilaspur"],
+  Bastar: ["Bastar"],
+  Koriya: ["Koriya"],
+  Jhansi: [
+    "Garautha", "Barua Sagar", "Simriddha", "Tahrauli", "Gursarai", "Bamor",
+    "Poonchh", "Erich", "Bhel Simrawali", "Babina Cantt", "Bangra Uldan Ranipur",
+    "Mauranipur", "Baragaon", "Ranipur", "Jhansi", "Samthar", "Archara", "Moth"
+  ],
+  Tikamgarh: [
+    "Tikamgarh", "Baldeogarh", "Jatara", "Palera", "Niwari", "Prithvipur",
+    "Orchha", "Badagaon", "Mohangarh", "Digoda", "Lidhora", "Khargapur"
+  ],
+  Datia: [
+    "Sewdha", "Chhoti Badoni", "Datia", "Indergarh", "Badhara Sopan",
+    "Unnao Balaji", "Bhander", "Salon B"
+  ],
+  Jaipur: ["Jaipur"],
+  Indore: ["Indore"],
+  Ujjain: ["Ujjain"],
+  Bhopal: ["Bhopal", "Berasia"],
+  Vidisha: ["Vidisha"],
+  Raisen: ["Begamganj"]
 };
 
 const CHAURASI_LOCAL_PANCHAYAT_MAPPING = {
@@ -82,6 +116,15 @@ const CHAURASI_SUB_LOCAL_PANCHAYAT_MAPPING = {
   },
 };
 
+const GUJARAT_CHAURASI_MAPPING = {
+  "Gandhinagar": {
+    assembly: "Chaurasi Regional Assembly",
+    localPanchayatName: "Gahoi Vaishya Panchayat",
+    localPanchayat: "Ahmedabad",
+    subLocalPanchayat: "Gandhi Nagar"
+  }
+};
+
 const RegistrationForm = () => {
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
@@ -94,6 +137,7 @@ const RegistrationForm = () => {
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const indianCities = [
     "Ahmedabad",
@@ -870,7 +914,6 @@ const RegistrationForm = () => {
       },
     },
   };
-
   // Memoized helper functions
   const memoizedGetLocationFromPincode = (pincode) => {
     if (!pincode || pincode.length !== 6) return null;
@@ -1058,23 +1101,72 @@ const RegistrationForm = () => {
     return !hasErrors(newErrors);
   }, [currentStep, formData]);
 
-  const handleNext = () => {
-    setSubmitted(true);
+  // Function to check if email exists in Strapi backend
+  const checkEmailExists = async (email) => {
+    try {
+      const baseUrl = import.meta.env.VITE_PUBLIC_STRAPI_API_URL;
+      const url = `${baseUrl}/api/registration-pages?filters[personal_information][email_address]=${encodeURIComponent(email)}`;
 
-    if (validateCurrentStep()) {
-      if (currentStep < formSteps.length - 1) {
-        setCurrentStep(currentStep + 1);
-        setSubmitted(false);
-        window.scrollTo(0, 0);
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to check email existence');
+      }
+
+      const data = await response.json();
+      return data.data && data.data.length > 0;
+
+    } catch (error) {
+      console.error('Error checking email existence:', error);
+      throw error;
+    }
+  };
+
+  const handleNext = async () => {
+    setSubmitted(true);
+    setLoading(true);
+    
+    try {
+      if (currentStep === 0 && formData.email) {
+        // Check email existence before proceeding
+        const emailExists = await checkEmailExists(formData.email);
+        if (emailExists) {
+          setErrors(prev => ({
+            ...prev,
+            email: "This email address is already registered. Please use a different email."
+          }));
+          setLoading(false);
+          return;
+        }
+      }
+      
+      if (validateCurrentStep()) {
+        if (currentStep < formSteps.length - 1) {
+          setCurrentStep(currentStep + 1);
+          setSubmitted(false);
+          window.scrollTo(0, 0);
+        } else {
+          handleSubmit();
+        }
       } else {
-        handleSubmit();
+        // Scroll to first error
+        const firstErrorField = document.querySelector(".error-field");
+        if (firstErrorField) {
+          firstErrorField.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
       }
-    } else {
-      // Scroll to first error
-      const firstErrorField = document.querySelector(".error-field");
-      if (firstErrorField) {
-        firstErrorField.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
+    } catch (error) {
+      setErrors(prev => ({
+        ...prev,
+        email: "Unable to verify email. Please try again."
+      }));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -1341,7 +1433,7 @@ const RegistrationForm = () => {
                   >
                     <path
                       fillRule="evenodd"
-                      d="M14.243 5.757a6 6 0 10-.986 9.284 1 1 0 111.087 1.678A8 8 0 1118 10a3 3 0 01-4.8 2.401A4 4 0 1114 10a1 1 0 102 0c0-1.537-.586-3.07-1.757-4.243zM12 10a2 2 0 10-4 0 2 2 0 004 0z"
+                      d="M14.243 5.757a6 6 0 10-9.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
                       clipRule="evenodd"
                     />
                   </svg>
@@ -1545,8 +1637,8 @@ const RegistrationForm = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <label className=" text-sm font-medium text-gray-700 flex items-center">
-                  <svg
+                <label className="block text-sm font-medium flex text-gray-700">
+                <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5 mr-2 text-red-700"
                     viewBox="0 0 20 20"
@@ -1554,26 +1646,33 @@ const RegistrationForm = () => {
                   >
                     <path
                       fillRule="evenodd"
-                      d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z"
+                      d="M5 2a1 1 0 00-1 1v1h1a1 1 0 000 2H6v1a1 1 0 00-2 0V6H3a1 1 0 000-2h1V3a1 1 0 00-1-1zm0 10a1 1 0 000 2h8a1 1 0 100-2H6z"
                       clipRule="evenodd"
                     />
                   </svg>
                   Blood Group
                 </label>
-                <input
-                  type="text"
+                <select
                   name="bloodGroup"
                   value={formData.bloodGroup}
                   onChange={handleInputChange}
                   className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 ${
                     hasError("bloodGroup")
-                      ? "border-red-500 bg-red-50 error-field"
+                      ? "border-red-500 bg-red-50"
                       : "border-gray-300"
                   }`}
-                  placeholder="Enter your blood group"
-                />
+                >
+                  <option value="">Select Blood Group</option>
+                  {BLOOD_GROUPS.map((group) => (
+                    <option key={group} value={group}>
+                      {group}
+                    </option>
+                  ))}
+                </select>
                 {hasError("bloodGroup") && (
-                  <p className="text-red-500 text-xs">{errors.bloodGroup}</p>
+                  <p className="text-red-500 text-xs">
+                    Please select your blood group
+                  </p>
                 )}
               </div>
 
@@ -1617,7 +1716,11 @@ const RegistrationForm = () => {
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
-                    <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                    <path
+                      fillRule="evenodd"
+                      d="M8 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   Date of Marriage
                 </label>
@@ -1712,29 +1815,46 @@ const RegistrationForm = () => {
                               e.target.value
                             )
                           }
-                          className={`block w-full px-4 py-2.5 text-gray-700 bg-white border ${
+                          className={`block w-full px-4 py-2.5 text-gray-700 border focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 ${
                             hasFamilyError(index, "name")
                               ? "border-red-300 bg-red-50"
                               : "border-gray-300"
                           } rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent`}
                           placeholder={`Enter ${member.relation}'s name`}
                         />
-                        <input
-                          type="tel"
-                          value={member.mobileNumber}
-                          onChange={(e) =>
-                            handleFamilyDetailChange(
-                              index,
-                              "mobileNumber",
-                              e.target.value
-                            )
-                          }
-                          className="block w-full px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                          pattern="[0-9]*"
-                          inputMode="numeric"
-                          maxLength={10}
-                          placeholder={`${member.relation}'s mobile number`}
-                        />
+                        <div className="flex gap-2">
+                          <input
+                            type="tel"
+                            value={member.mobileNumber}
+                            onChange={(e) =>
+                              handleFamilyDetailChange(
+                                index,
+                                "mobileNumber",
+                                e.target.value
+                              )
+                            }
+                            className="block flex-1 px-4 py-2.5 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
+                            maxLength={10}
+                            placeholder={`${member.relation}'s mobile number`}
+                          />
+                          {member.mobileNumber?.length === 10 && (
+                            <button
+                              type="button"
+                              onClick={() => openWhatsAppShare(member.mobileNumber)}
+                              className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
+                              title="Invite to join"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -1773,25 +1893,42 @@ const RegistrationForm = () => {
                           e.target.value
                         )
                       }
-                      className="block w-full px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      className="block w-full px-4 py-2.5 text-gray-700 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
                       placeholder="Enter spouse's name"
                     />
-                    <input
-                      type="tel"
-                      value={member.mobileNumber}
-                      onChange={(e) =>
-                        handleFamilyDetailChange(
-                          index + 2,
-                          "mobileNumber",
-                          e.target.value
-                        )
-                      }
-                      className="block w-full px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                      pattern="[0-9]*"
-                      inputMode="numeric"
-                      maxLength={10}
-                      placeholder="Spouse's mobile number"
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="tel"
+                        value={member.mobileNumber}
+                        onChange={(e) =>
+                          handleFamilyDetailChange(
+                            index + 2,
+                            "mobileNumber",
+                            e.target.value
+                          )
+                        }
+                        className="block flex-1 px-4 py-2.5 text-gray-700 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
+                        maxLength={10}
+                        placeholder="Spouse's mobile number"
+                      />
+                      {member.mobileNumber?.length === 10 && (
+                        <button
+                          type="button"
+                          onClick={() => openWhatsAppShare(member.mobileNumber)}
+                          className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
+                          title="Invite to join"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1879,7 +2016,7 @@ const RegistrationForm = () => {
                                     e.target.value
                                   )
                                 }
-                                className={`block w-full px-4 py-2.5 text-gray-700 bg-white border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                className={`block w-full px-4 py-2.5 text-gray-700 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 ${
                                   hasFamilyError(index, "name")
                                     ? "border-red-500 bg-red-50"
                                     : "border-gray-300"
@@ -1893,33 +2030,48 @@ const RegistrationForm = () => {
                               )}
                             </div>
                             <div className="space-y-1">
-                              <input
-                                type="tel"
-                                value={member.mobileNumber}
-                                onChange={(e) =>
-                                  handleFamilyDetailChange(
-                                    index,
-                                    "mobileNumber",
-                                    e.target.value
-                                  )
-                                }
-                                className={`block w-full px-4 py-2.5 text-gray-700 bg-white border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                  hasFamilyError(index, "mobileNumber")
-                                    ? "border-red-500 bg-red-50"
-                                    : "border-gray-300"
-                                }`}
-                                pattern="[0-9]*"
-                                inputMode="numeric"
-                                maxLength={10}
-                                placeholder="Mobile number (optional)"
-                              />
+                              <div className="flex gap-2">
+                                <input
+                                  type="tel"
+                                  value={member.mobileNumber}
+                                  onChange={(e) =>
+                                    handleFamilyDetailChange(
+                                      index,
+                                      "mobileNumber",
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`block flex-1 px-4 py-2.5 text-gray-700 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 ${
+                                    hasFamilyError(index, "mobileNumber")
+                                      ? "border-red-500 bg-red-50"
+                                      : "border-gray-300"
+                                  }`}
+                                  pattern="[0-9]*"
+                                  inputMode="numeric"
+                                  maxLength={10}
+                                  placeholder="Mobile number (optional)"
+                                />
+                                {member.mobileNumber?.length === 10 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => openWhatsAppShare(member.mobileNumber)}
+                                    className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
+                                    title="Invite to join"
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-5 w-5"
+                                      viewBox="0 0 20 20"
+                                      fill="currentColor"
+                                    >
+                                      <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                                    </svg>
+                                  </button>
+                                )}
+                              </div>
                               {hasFamilyError(index, "mobileNumber") && (
                                 <p className="text-red-500 text-xs">
-                                  {
-                                    errors[
-                                      `familyDetails.${index}.mobileNumber`
-                                    ]
-                                  }
+                                  {errors[`familyDetails.${index}.mobileNumber`]}
                                 </p>
                               )}
                             </div>
@@ -2066,7 +2218,7 @@ const RegistrationForm = () => {
                                     e.target.value
                                   )
                                 }
-                                className="block w-full px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                className="block w-full px-4 py-2.5 text-gray-700 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
                               >
                                 <option value="">Select Relation</option>
                                 {SIBLING_RELATION_OPTIONS.map((rel) => (
@@ -2085,29 +2237,48 @@ const RegistrationForm = () => {
                                     e.target.value
                                   )
                                 }
-                                className="block w-full px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                className="block w-full px-4 py-2.5 text-gray-700 bg-white rounded-lg border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
                                 placeholder={`Sibling ${
                                   siblingIndex + 1
                                 }'s name`}
                               />
                             </div>
                             <div className="space-y-4">
-                              <input
-                                type="tel"
-                                value={member.mobileNumber}
-                                onChange={(e) =>
-                                  handleFamilyDetailChange(
-                                    index,
-                                    "mobileNumber",
-                                    e.target.value
-                                  )
-                                }
-                                className="block w-full px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                pattern="[0-9]*"
-                                inputMode="numeric"
-                                maxLength={10}
-                                placeholder="Mobile number"
-                              />
+                              <div className="flex gap-2">
+                                <input
+                                  type="tel"
+                                  value={member.mobileNumber}
+                                  onChange={(e) =>
+                                    handleFamilyDetailChange(
+                                      index,
+                                      "mobileNumber",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="block flex-1 px-4 py-2.5 text-gray-700 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
+                                  pattern="[0-9]*"
+                                  inputMode="numeric"
+                                  maxLength={10}
+                                  placeholder="Mobile number"
+                                />
+                                {member.mobileNumber?.length === 10 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => openWhatsAppShare(member.mobileNumber)}
+                                    className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
+                                    title="Invite to join"
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-5 w-5"
+                                      viewBox="0 0 20 20"
+                                      fill="currentColor"
+                                    >
+                                      <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                                    </svg>
+                                  </button>
+                                )}
+                              </div>
                               <input
                                 type="number"
                                 value={member.age}
@@ -2118,7 +2289,7 @@ const RegistrationForm = () => {
                                     e.target.value
                                   )
                                 }
-                                className={`block w-full px-4 py-2.5 text-gray-700 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                                className={`block w-full px-4 py-2.5 text-gray-700 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 ${
                                   hasFamilyError(index, "age")
                                     ? "border-red-500 bg-red-50"
                                     : "border-gray-300"
@@ -2133,45 +2304,6 @@ const RegistrationForm = () => {
                                 </p>
                               )}
                             </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <select
-                              value={member.education}
-                              onChange={(e) =>
-                                handleFamilyDetailChange(
-                                  index,
-                                  "education",
-                                  e.target.value
-                                )
-                              }
-                              className="block w-full px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                            >
-                              <option value="">Select Education</option>
-                              {EDUCATION_OPTIONS.map((edu) => (
-                                <option key={edu} value={edu}>
-                                  {edu}
-                                </option>
-                              ))}
-                            </select>
-                            <select
-                              value={member.occupation}
-                              onChange={(e) =>
-                                handleFamilyDetailChange(
-                                  index,
-                                  "occupation",
-                                  e.target.value
-                                )
-                              }
-                              className="block w-full px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                            >
-                              <option value="">Select Occupation</option>
-                              {OCCUPATION_OPTIONS.map((occ) => (
-                                <option key={occ} value={occ}>
-                                  {occ}
-                                </option>
-                              ))}
-                            </select>
                           </div>
 
                           <div className="flex flex-wrap items-center gap-6">
@@ -2222,11 +2354,6 @@ const RegistrationForm = () => {
                                   </span>
                                 </label>
                               </div>
-                              {hasFamilyError(index, "gender") && (
-                                <p className="text-red-500 text-xs">
-                                  Gender is required
-                                </p>
-                              )}
                             </div>
 
                             <select
@@ -2238,7 +2365,7 @@ const RegistrationForm = () => {
                                   e.target.value
                                 )
                               }
-                              className={`px-4 py-2 text-sm text-gray-700 bg-white border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                              className={`px-4 py-2 text-sm text-gray-700 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200${
                                 hasFamilyError(index, "maritalStatus")
                                   ? "border-red-500 bg-red-50"
                                   : "border-gray-300"
@@ -2251,11 +2378,6 @@ const RegistrationForm = () => {
                                 </option>
                               ))}
                             </select>
-                            {hasFamilyError(index, "maritalStatus") && (
-                              <p className="text-red-500 text-xs">
-                                Marital status is required
-                              </p>
-                            )}
 
                             <label className="inline-flex items-center">
                               <input
@@ -2282,41 +2404,31 @@ const RegistrationForm = () => {
               </div>
             </div>
 
-            {/* Share on WhatsApp Button */}
-            <div className="flex justify-end">
+            {/* Invite to Join/Login Button */}
+            {/* <div className="flex justify-end">
               <button
                 type="button"
                 onClick={() => {
-                  const text = `Family Details:\n${formData.familyDetails
-                    .map(
-                      (member) =>
-                        `${member.relation}${
-                          member.siblingRelation
-                            ? ` (${member.siblingRelation})`
-                            : ""
-                        }: ${member.name} ${
-                          member.mobileNumber ? `(${member.mobileNumber})` : ""
-                        }`
-                    )
-                    .join("\n")}`;
+                  const inviteText = t('registration.invite.message', 'Join our community! Register or login at: ');
+                  const websiteUrl = window.location.origin;
                   window.open(
-                    `https://wa.me/?text=${encodeURIComponent(text)}`,
+                    `https://wa.me/?text=${encodeURIComponent(inviteText + websiteUrl)}`,
                     "_blank"
                   );
                 }}
-                className="inline-flex items-center px-4 py-2 bg-[#25D366] text-white rounded-lg hover:bg-[#20BD5A] transition-all duration-200 shadow-sm hover:shadow-md"
+                className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 mr-2"
-                  viewBox="0 0 448 512"
+                  viewBox="0 0 20 20"
                   fill="currentColor"
                 >
-                  <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z" />
+                  <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
                 </svg>
-                Share on WhatsApp
+                {t('registration.invite.buttonText', 'Invite to Join')}
               </button>
-            </div>
+            </div> */}
           </div>
         );
 
@@ -2451,126 +2563,6 @@ const RegistrationForm = () => {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {/* Manglik Status */}
-              {/* <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200 transition-all hover:shadow-md">
-                <label className=" text-sm font-medium text-gray-700 mb-2 sm:mb-3 flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 text-red-600"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z" />
-                  </svg>
-                  Manglik Status
-                </label>
-                <div className="space-y-1 sm:space-y-2 px-3 sm:px-4 py-2 rounded-lg border border-gray-100 bg-gray-50">
-                  {["Manglik", "Non Manglik", "Aanshik", "Other"].map(
-                    (option) => (
-                      <label
-                        key={option}
-                        className="flex items-center text-sm cursor-pointer hover:bg-gray-100 p-1 sm:p-2 rounded"
-                      >
-                      <input
-                        type="radio"
-                        name="manglik"
-                        value={option}
-                        checked={formData.manglik === option}
-                        onChange={handleInputChange}
-                        className="mr-2 h-4 w-4 text-red-700"
-                      />
-                      <span>{option}</span>
-                    </label>
-                    )
-                  )}
-                </div>
-                {hasError("manglik") && (
-                  <p className="text-red-500 text-xs mt-2 ml-1">
-                    {errors.manglik}
-                  </p>
-                )}
-              </div> */}
-
-              {/* Grah */}
-              {/* <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200 transition-all hover:shadow-md">
-                <label className=" text-sm font-medium text-gray-700 mb-2 sm:mb-3 flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 text-red-600"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z" />
-                  </svg>
-                  Grah
-                </label>
-                <div className="space-y-1 sm:space-y-2 px-3 sm:px-4 py-2 rounded-lg border border-gray-100 bg-gray-50">
-                  {["Devta", "Manushya", "Rakshasa"].map((option) => (
-                    <label
-                      key={option}
-                      className="flex items-center text-sm cursor-pointer hover:bg-gray-100 p-1 sm:p-2 rounded"
-                    >
-                      <input
-                        type="radio"
-                        name="grah"
-                        value={option}
-                        checked={formData.grah === option}
-                        onChange={handleInputChange}
-                        className="mr-2 h-4 w-4 text-red-700"
-                      />
-                      <span>{option}</span>
-                    </label>
-                  ))}
-                </div>
-                {hasError("grah") && (
-                  <p className="text-red-500 text-xs mt-2 ml-1">
-                    {errors.grah}
-                  </p>
-                )}
-              </div> */}
-
-              {/* Handicap */}
-              {/* <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200 transition-all hover:shadow-md">
-                <label className=" text-sm font-medium text-gray-700 mb-2 sm:mb-3 flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 text-red-600"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-.464 5.535a1 1 0 10-1.415-1.414 3 3 0 01-4.242 0 1 1 0 00-1.415 1.414 5 5 0 007.072 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Handicap
-                </label>
-                <div className="space-y-1 sm:space-y-2 px-3 sm:px-4 py-2 rounded-lg border border-gray-100 bg-gray-50">
-                  {["None", "Physically", "Mentally", "Other"].map((option) => (
-                    <label
-                      key={option}
-                      className="flex items-center text-sm cursor-pointer hover:bg-gray-100 p-1 sm:p-2 rounded"
-                    >
-                      <input
-                        type="radio"
-                        name="handicap"
-                        value={option}
-                        checked={formData.handicap === option}
-                        onChange={handleInputChange}
-                        className="mr-2 h-4 w-4 text-red-700"
-                      />
-                      <span>{option}</span>
-                    </label>
-                  ))}
-                </div>
-                {hasError("handicap") && (
-                  <p className="text-red-500 text-xs mt-2 ml-1">
-                    {errors.handicap}
-                  </p>
-                )}
-              </div> */}
-
               {/* Show Gotra fields only if marriageToAnotherCaste is false */}
               {!formData.marriageToAnotherCaste && (
                 <>
@@ -2939,7 +2931,7 @@ const RegistrationForm = () => {
               >
                 <path
                   fillRule="evenodd"
-                  d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z"
+                  d="M14.243 5.757a6 6 0 10-9.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
                   clipRule="evenodd"
                 />
               </svg>
@@ -3065,692 +3057,1157 @@ const RegistrationForm = () => {
 
   const getFilteredRegionalAssemblies = useCallback(() => {
     if (!formData.state) return [];
-    return STATE_TO_ASSEMBLIES[formData.state] || [];
-  }, [formData.state]);
+
+    // For Uttar Pradesh
+    if (formData.state === "Uttar Pradesh") {
+      if (formData.district === "Mathura") {
+        return ["Northern Regional Assembly"];
+      }
+      if (formData.district === "Mahoba") {
+        return ["Vindhya Regional Assembly"];
+      }
+      if (formData.district === "Sultanpur") {
+        return ["Mahakaushal Regional Assembly"];
+      }
+      if (formData.district === "Lalitpur") {
+        return ["Bundelkhand Regional Assembly"];
+      }
+      if (formData.district === "Jhansi") {
+        return ["Bundelkhand Regional Assembly"];
+      }
+      if (["Jalaun", "Lucknow", "Kanpur Nagar", "Chitrakoot", "Banda", "Auraiya"].includes(formData.district)) {
+        return ["Ganga Jamuna Regional Assembly"];
+      }
+    }
+
+    // For Madhya Pradesh, filter assemblies based on district
+    if (formData.state === "Madhya Pradesh") {
+      // Mahakaushal Regional Assembly districts
+      if (["Jabalpur", "Katni", "Rewa", "Narsinghpur", "Umaria", "Sagar", "Seoni", "Katni", "Chhindwara", "Panna", "Hoshangabad", "Mandla", "Damoh", "Shahdol", "Dindori",
+        "Guna"
+      ].includes(formData.district)) {
+        if (formData.district === "Panna") {
+          return ["Mahakaushal Regional Assembly", "Vindhya Regional Assembly"];
+        }
+        return ["Mahakaushal Regional Assembly"];
+      }
+
+      // Vindhya Regional Assembly districts
+      if (["Satna", "Shahdol", "Sidhi", "Chhatarpur", "Panna", "Rewa"].includes(formData.district)) {
+        if (formData.district === "Panna") {
+          return ["Mahakaushal Regional Assembly", "Vindhya Regional Assembly"];
+        }
+        return ["Vindhya Regional Assembly"];
+      }
+
+      // Chaurasi Regional Assembly districts
+      if (["Shivpuri", "Rewa", "Satna", "Ashoknagar", "Guna"].includes(formData.district)) {
+        return ["Chaurasi Regional Assembly"];
+      }
+
+      // Chambal Regional Assembly districts
+      if (["Gwalior", "Bhind", "Datia", "Morena"].includes(formData.district)) {
+        return ["Chambal Regional Assembly"];
+      }
+
+      // Central Malwa Regional Assembly districts
+      if (["Indore", "Dewas", "Ujjain", "Bhopal", "Vidisha", "Raisen"].includes(formData.district)) {
+        return ["Central Malwa Regional Assembly"];
+      }
+
+      // Bundelkhand Regional Assembly districts
+      if (["Tikamgarh"].includes(formData.district)) {
+        return ["Bundelkhand Regional Assembly"];
+      }
+    }
+
+    // For Delhi
+    if (formData.state === "Delhi" && formData.district === "Delhi") {
+      return ["Northern Regional Assembly"];
+    }
+
+    // For Bihar
+    if (formData.state === "Bihar" && formData.district === "Patna") {
+      return ["Vindhya Regional Assembly"];
+    }
+
+    // For Rajasthan
+    if (formData.state === "Rajasthan" && formData.district === "Jaipur") {
+      return ["Chambal Regional Assembly"];
+    }
+
+    // For Chhattisgarh
+    if (formData.state === "Chhattisgarh") {
+      if (["Durg", "Rajnandgaon", "Dhamtari", "Raipur", "Bilaspur", "Bastar", "Koriya"].includes(formData.district)) {
+        return ["Chhattisgarh Regional Assembly"];
+      }
+    }
+
+    // For Maharashtra
+    if (formData.state === "Maharashtra") {
+      if (["Nagpur", "Pune", "Amravati", "Mumbai", "Jalgaon"].includes(formData.district)) {
+        return ["Southern Regional Assembly"];
+      }
+    }
+
+      return [];
+  }, [formData.state, formData.district]);
 
   const getFilteredLocalPanchayatNames = () => {
     if (!formData.regionalAssembly) return [];
 
-    if (formData.regionalAssembly === "Chambal Regional Assembly") {
-      return chambalPanchayatNames;
-    } else if (formData.regionalAssembly === "Ganga Jamuna Regional Assembly") {
-      return gangaJamunaPanchayatNames;
-    } else if (formData.regionalAssembly === "Bundelkhand Regional Assembly") {
-      return bundelkhandPanchayatNames;
-    } else if (formData.regionalAssembly === "Chaurasi Regional Assembly") {
-      return CHAURASI_PANCHAYAT_NAMES;
-    } else if (
-      formData.regionalAssembly === "Central Malwa Regional Assembly"
-    ) {
-      return centralMalwaPanchayatNames;
-    } else if (formData.regionalAssembly === "Mahakaushal Regional Assembly") {
-      return mahakaushalPanchayatNames;
-    } else if (formData.regionalAssembly === "Vindhya Regional Assembly") {
-      return vindhyaPanchayatNames;
-    } else if (formData.regionalAssembly === "Chhattisgarh Regional Assembly") {
-      return chhattisgarhPanchayatNames;
-    } else if (formData.regionalAssembly === "Southern Regional Assembly") {
-      return southernPanchayatNames;
-    } else if (formData.regionalAssembly === "Northern Regional Assembly") {
-      return northernPanchayatNames;
+    // Bundelkhand Regional Assembly cases
+    if (formData.regionalAssembly === "Bundelkhand Regional Assembly") {
+      if (formData.state === "Uttar Pradesh") {
+        if (formData.district === "Lalitpur") {
+          return [
+            "Shri Daudayal Gahoi Vaishya Seva Samiti",
+            "Gahoi Vaishya Seva Samiti",
+            "Gahoi Vaishya Panchayat",
+            "Shri Gahoi Vaishya Panchayat"
+          ];
+        }
+      }
     }
+
+    // Chaurasi Regional Assembly cases
+    if (formData.regionalAssembly === "Chaurasi Regional Assembly") {
+      if (formData.state === "Madhya Pradesh") {
+        if (formData.district === "Shivpuri") {
+          return ["Gahoi Vaishya Panchayat", "Shri Gahoi Vaishya Sabha"];
+        }
+        if (["Rewa", "Satna", "Guna"].includes(formData.district)) {
+          return ["Gahoi Vaishya Panchayat"];
+        }
+        if (formData.district === "Ashoknagar") {
+          return ["Gahoi Vaishya Panchayat", "Gahoi Vaishya Samaj"];
+        }
+      }
+    }
+
+    // Chambal Regional Assembly cases
+    if (formData.regionalAssembly === "Chambal Regional Assembly") {
+      // For Gwalior
+      if (formData.state === "Madhya Pradesh" && formData.district === "Gwalior" && formData.city === "Gwalior") {
+        return ["Gahoi Vaishya Samaj Register Brahttar Gwalior", "Gahoi Vaishya Panchayat"];
+      }
+      // For Bhind
+      if (formData.state === "Madhya Pradesh" && formData.district === "Bhind") {
+        return ["Gahoi Vaishya Sabha", "Gahoi Vaishya Panchayat"];
+      }
+      // For Datia
+      if (formData.state === "Madhya Pradesh" && formData.district === "Datia") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+      // For Morena
+      if (formData.state === "Madhya Pradesh" && formData.district === "Morena") {
+        return ["Gahoi Vaishya Samaj"];
+      }
+      // For Jaipur
+      if (formData.state === "Rajasthan" && formData.district === "Jaipur") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+    }
+
+    // Northern Regional Assembly case
+    if (formData.regionalAssembly === "Northern Regional Assembly") {
+      if (formData.state === "Delhi" && formData.district === "Delhi") {
+        return ["Shri Gahoi Vaishya Association"];
+      }
+      if (formData.state === "Uttar Pradesh" && formData.district === "Mathura") {
+        return ["Gahoi Vaishya Vikas Sansthan"];
+      }
+    }
+
+    // Vindhya Regional Assembly cases
+    if (formData.regionalAssembly === "Vindhya Regional Assembly") {
+      if (formData.state === "Bihar" && formData.district === "Patna") {
+        return ["Shri Gahoi Vaishya Sabha"];
+      }
+      if (formData.state === "Uttar Pradesh" && formData.district === "Mahoba") {
+        return ["Gahoi Vaishya Samaj"];
+      }
+      // Add new Madhya Pradesh cases for Central Malwa
+      if (formData.state === "Madhya Pradesh") {
+        if (formData.district === "Indore") {
+          return ["Gahoi Vaishya Samaj"];
+        }
+        if (formData.district === "Ujjain") {
+          return ["Gahoi Vaishya Panchayat"];
+        }
+        if (formData.district === "Bhopal") {
+          return ["Gahoi Vaishya Panchayat"];
+        }
+        if (formData.district === "Vidisha") {
+          return ["Gahoi Vaishya Samaj Kalyan Samiti"];
+        }
+        if (formData.district === "Raisen" && formData.city === "Begamganj") {
+          return ["Shri Gahoi Vaishya Samaj Panchayat"];
+        }
+      }
+
+    //Chattrapur, Panna, Reva, Satna case
+      if (formData.regionalAssembly === "Vindhya Regional Assembly" && 
+          formData.state === "Madhya Pradesh" && 
+          ["Laundi", "Nowgong", "Chhatarpur", "Harpalpur", "Bada Malhera"].includes(formData.city)) {
+          return ["Gahoi Vaishya Panchayat"];
+      }
+          if (formData.district === "Panna" && formData.city === "Amanganj") {
+                return ["Gahoi Vaishya Panchayat"];
+              
+      }
+      if (formData.district === "Panna" && formData.city === "Ajaigarh") {
+                return ["Gahoi Vaishya Panchayat"];
+              
+      }
+      if (formData.district === "Panna" && formData.city === "Panna") {
+                return ["Gahoi Vaishya Panchayat"];
+              
+      }
+
+     
+      if (formData.state === "Madhya Pradesh" && formData.district === "Satna") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+      
+
+    }
+
+    
+    
+
+    
+
+    // Mahakaushal Regional Assembly case
+    if (formData.regionalAssembly === "Mahakaushal Regional Assembly") {
+      if (formData.state === "Uttar Pradesh" && formData.district === "Sultanpur") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+      if (formData.state === "Madhya Pradesh" && formData.city === "Gotegaon" ) {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+      if (formData.state === "Madhya Pradesh" && formData.city === "Gadarwara") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+      if (formData.state === "Madhya Pradesh" && formData.city === "Barheta") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+      if (formData.state === "Madhya Pradesh" && formData.city === "Narsinghpur") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+      if (formData.state === "Madhya Pradesh" && formData.city === "Chichli") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+        if (formData.state === "Madhya Pradesh" && formData.city === "Saikeda") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+
+      if (formData.city === "Kareli" ) {
+        return ["Gahoi Vaishya Samaj Panchayat"];
+      }
+        if (formData.city === "Paloha" ) {
+       return ["Gahoi Vaishya Samaj Panchayat"];
+      }
+       if (formData.city === "Tendukheda(NP)" ) {
+      return ["Gahoi Vaishya Samaj Panchayat"];
+      }
+        if (formData.city === "Narsinghpur" ) {
+      return ["Gahoi Vaishya Samaj Panchayat"];
+      }
+
+      if (formData.city === "Jabalpur") {
+        return ["Gahoi Vaishya Panchayat", "Shri Gahoi Vaishya Samaj"];
+      }
+         if (formData.city === "Sihora") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+
+       if (formData.state === "Madhya Pradesh" && formData.city === "Umaria" ) {
+        return ["Shri Gahoi Vaishya Panchayat"];
+      }
+
+      if (formData.state === "Madhya Pradesh" && formData.city === "Katni Nagar") {
+        return ["Gahoi Vaishya Samaj", "Gahoi Vaishya Panchayat Parishad"];
+      }
+
+// Chindwara 
+      if (formData.state === "Madhya Pradesh" && formData.city === "Chhindwara") {
+        return ["Gahoi Vaishya Panchayat", "Shri Gahoi Vaishya Panchayat"];
+      }
+
+ // Panna
+      if (formData.state === "Madhya Pradesh" && formData.city === "Panna") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+
+
+//Hoshangabad
+      if (formData.state === "Madhya Pradesh" && formData.city === "Pipariya") {
+        return ["Gahoi Vaishya Panchayat"];
+      } 
+// Mandla
+      if (formData.state === "Madhya Pradesh" && formData.city === "Mandla") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+// Damoh
+      if (formData.state === "Madhya Pradesh" && formData.city === "Hatta") {
+        return ["Shri Gahoi Vaishya Panchayat"];
+      }
+// Shahdol
+      if (formData.state === "Madhya Pradesh" && formData.city === "Shahdol") {
+        return ["Shri Gahoi Vaishya Panchayat"];
+      }
+// Dindori
+      if (formData.state === "Madhya Pradesh" && formData.city === "Dindori") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+// Guna
+      if (formData.state === "Madhya Pradesh" && formData.city === "Raghogarh") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+
+
+
+//Sagar District cases
+if (formData.state === "Madhya Pradesh") {
+  switch(formData.city) {
+    case "Rehli":
+    case "Sagar":
+      return ["Gahoi Vaishya Panchayat"];
+    case "Garhakota":
+    case "Deori":
+      return ["Shri Gahoi Vaishya Panchayat"];
+    case "Shahgarh":
+      return ["Gahoi Vaishya Samaj"];
+  }
+}
+
+
+if (formData.state === "Madhya Pradesh" && (formData.city === "Lakhnadon" || formData.city === "Seoni")) {
+    return ["Gahoi Vaishya Panchayat"];
+}
+
+}
+
+    
+
+
+
+
+    // Bundelkhand Regional Assembly cases
+    if (formData.regionalAssembly === "Bundelkhand Regional Assembly") {
+      if (formData.state === "Uttar Pradesh" && formData.district === "Jhansi") {
+        if (["Garautha", "Barua Sagar", "Simriddha", "Tahrauli", "Gursarai", "Bamor", 
+            "Poonchh", "Erich", "Bhel Simrawali", "Babina Cantt", "Bangra Uldan Ranipur", 
+            "Mauranipur"].includes(formData.city)) {
+            return ["Gahoi Vaishya Panchayat"];
+          }
+        if (["Baragaon", "Ranipur", "Jhansi", "Samthar", "Archara"].includes(formData.city)) {
+          return ["Shri Gahoi Vaishya Panchayat"];
+        }
+        if (formData.city === "Moth") {
+          return ["Shri Gahoi Vaishya Seva Samiti"];
+        }
+      }
+      if (formData.state === "Madhya Pradesh" && formData.district === "Tikamgarh") {
+        return ["Shri Gahoi Vaishya Panchayat"];
+      }
+    }
+
+    // Ganga Jamuna Regional Assembly cases
+    if (formData.regionalAssembly === "Ganga Jamuna Regional Assembly") {
+      if (formData.state === "Uttar Pradesh") {
+        if (formData.district === "Jalaun") {
+          return ["Gahoi Vaishya Samaj Panchayat", "Gahoi Vaishya Panchayat Samiti"];
+        }
+        if (formData.district === "Lucknow") {
+          return ["Gahoi Vaishya Panchayat"];
+        }
+        if (formData.district === "Kanpur Nagar") {
+          return ["Gahoi Vaishya Kalyan Samiti"];
+        }
+        if (formData.district === "Chitrakoot") {
+          return ["Gahoi Vaishya Samaj"];
+        }
+        if (formData.district === "Banda") {
+            return ["Gahoi Vaishya Samaj Panchayat"];
+          }
+        if (formData.district === "Auraiya") {
+          return ["Gahoi Vaishya Yuva Samiti"];
+        }
+      }
+    }
+
+    // Chhattisgarh Regional Assembly cases
+    if (formData.regionalAssembly === "Chhattisgarh Regional Assembly") {
+      if (formData.state === "Chhattisgarh") {
+        if (["Durg", "Rajnandgaon", "Dhamtari", "Raipur", "Bilaspur"].includes(formData.district)) {
+            return ["Gahoi Vaishya Panchayat"];
+          }
+        if (["Bastar", "Koriya"].includes(formData.district)) {
+          return ["Gahoi Vaishya Samaj"];
+        }
+      }
+    }
+
+    // Southern Regional Assembly cases
+    if (formData.regionalAssembly === "Southern Regional Assembly") {
+      if (formData.state === "Maharashtra") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+    }
+
+    // Add new Central Malwa Regional Assembly cases
+    if (formData.regionalAssembly === "Central Malwa Regional Assembly") {
+      if (formData.state === "Madhya Pradesh") {
+        if (formData.district === "Indore") {
+          return ["Gahoi Vaishya Samaj"];
+        }
+        if (formData.district === "Ujjain") {
+          return ["Gahoi Vaishya Panchayat"];
+        }
+        if (formData.district === "Bhopal") {
+          return ["Gahoi Vaishya Panchayat"];
+        }
+        if (formData.district === "Vidisha") {
+          return ["Gahoi Vaishya Samaj Kalyan Samiti"];
+        }
+        if (formData.district === "Raisen") {
+          return ["Shri Gahoi Vaishya Samaj Panchayat"];
+        }
+      }
+    }
+
     return [];
   };
 
-  //  local panchayats based on local panchayat name and regional assembly
   const getFilteredLocalPanchayats = () => {
     if (!formData.regionalAssembly || !formData.localPanchayatName) return [];
 
-    // For Chaurasi Regional Assembly mappings
-    if (formData.regionalAssembly === "Chaurasi Regional Assembly") {
-      return (
-        CHAURASI_LOCAL_PANCHAYAT_MAPPING[formData.localPanchayatName] || []
-      );
-    }
-
-    // For Northern Regional Assembly mappings
-    if (formData.regionalAssembly === "Northern Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Vikas Sansthan") {
-        return ["Mathura"];
-      } else if (
-        formData.localPanchayatName === "Shri Gahoi Vaishya Association"
-      ) {
-        return ["Delhi"];
-      }
-      return [];
-    }
-
-    // For Southern Regional Assembly mappings
-    if (formData.regionalAssembly === "Southern Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
-        return [
-          "Nagpur",
-          "Pune",
-          "Amravati",
-          "Mumbai",
-          "Chalisgaon",
-          "Dhuliya",
-          "Other",
-        ];
-      }
-      return [];
-    }
-
-    // For Chhattisgarh Regional Assembly mappings
-    if (formData.regionalAssembly === "Chhattisgarh Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
-        return [
-          "Durg",
-          "Rajnandgaon",
-          "Dhamtari",
-          "Raipur",
-          "Bilaspur",
-          "Nagpur",
-          "Pune",
-          "Amravati",
-          "Mumbai",
-          "Chalisgaon",
-          "Dhuliya",
-          "Other",
-        ];
-      } else if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
-        return ["Jagdalpur", "Baikunthpur"];
-      }
-      return [];
-    }
-
-    // For Vindhya Regional Assembly mappings
-    if (formData.regionalAssembly === "Vindhya Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
-        return ["Chhatarpur", "Panna", "Satna", "Rewa"];
-      } else if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
-        return ["Mahoba"];
-      } else if (formData.localPanchayatName === "Shri Gahoi Vaishya Sabha") {
-        return ["Patna City"];
-      }
-      return [];
-    }
-
-    // For Mahakaushal Regional Assembly mappings
-    if (formData.regionalAssembly === "Mahakaushal Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
-        return [
-          "Narsinghpur",
-          "Jabalpur",
-          "Sagar",
-          "Seoni",
-          "Chhindwara",
-          "Panna",
-          "Hoshangabad",
-          "Mandla",
-          "Dindori",
-          "Guna",
-          "Sultanpur",
-        ];
-      } else if (
-        formData.localPanchayatName === "Gahoi Vaishya Samaj Panchayat"
-      ) {
-        return ["Narsinghpur"];
-      } else if (
-        formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat"
-      ) {
-        return ["Umariya", "Sagar", "Chhindwara", "Hata", "Shahdol"];
-      } else if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
-        return ["Sagar", "Katni"];
-      } else if (
-        formData.localPanchayatName === "Gahoi Vaishya Panchayat Parishad"
-      ) {
-        return ["Katni"];
-      } else if (formData.localPanchayatName === "Shri Gahoi Vaishya Samaj") {
-        return ["Jabalpur"];
-      }
-      return [];
-    }
-
-    // For Central Malwa Regional Assembly mappings
-    if (formData.regionalAssembly === "Central Malwa Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
+    // Central Malwa Regional Assembly cases
+    if (formData.regionalAssembly === "Central Malwa Regional Assembly" && formData.state === "Madhya Pradesh") {
+      if (formData.localPanchayatName === "Gahoi Vaishya Samaj" && formData.district === "Indore") {
         return ["Indore"];
-      } else if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
-        return ["Ujjain", "Bhopal"];
-      } else if (
-        formData.localPanchayatName === "Gahoi Vaishya Samaj Kalyan Samiti"
-      ) {
+      }
+      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+        if (formData.district === "Ujjain") return ["Ujjain"];
+        if (formData.district === "Bhopal") return ["Bhopal"];
+      }
+      if (formData.localPanchayatName === "Gahoi Vaishya Samaj Kalyan Samiti" && formData.district === "Vidisha") {
         return ["Vidisha"];
-      } else if (
-        formData.localPanchayatName === "Gahoi Vaishya Samaj Panchayat"
-      ) {
-        return ["Bhopal"];
-      } else if (
-        formData.localPanchayatName === "Shri Gahoi Vaishya Samaj Panchayat"
-      ) {
+      }
+      if (formData.localPanchayatName === "Shri Gahoi Vaishya Samaj Panchayat" && formData.district === "Raisen") {
         return ["Raisen"];
       }
       return [];
     }
 
-    // For Chaurasi Regional Assembly  mappings
-    if (formData.regionalAssembly === "Chaurasi Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
-        if (formData.localPanchayat === "Shivpuri") {
-          return [
-            "Shivpuri",
-            "Malhawani",
-            "Pipara",
-            "Semri",
-            "Bamore Damaroun",
-            "Manpura",
-            "Pichhore",
-          ];
-        } else if (formData.localPanchayat === "Ashok Nagar") {
-          return ["Ashok Nagar", "Bamore Kala"];
-        } else if (formData.localPanchayat === "Guna") {
-          return ["Guna"];
-        } else if (formData.localPanchayat === "Ahmedabad") {
-          return ["Gandhi Nagar"];
-        }
-      } else if (formData.localPanchayatName === "Shri Gahoi Vaishya Sabha") {
-        if (formData.localPanchayat === "Shivpuri") {
-          return ["Karera", "Bhonti"];
-        }
-      } else if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
-        if (formData.localPanchayat === "Ashok Nagar") {
-          return ["Dinara", "Guna"];
-        }
-      }
-      return [];
-    }
-
-    // If in Ganga Jamuna Regional Assembly mappings
-    if (formData.regionalAssembly === "Ganga Jamuna Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat Samiti") {
-        return ["Jalaun"];
-      } else if (
-        formData.localPanchayatName === "Gahoi Vaishya Kalyan Samiti"
-      ) {
-        return ["Kanpur"];
-      } else if (formData.localPanchayatName === "Gahoi Vaishya Yuva Samiti") {
-        return ["Auraiya"];
-      } else if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
-        return ["Lucknow"];
-      } else if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
-        return ["Karvi"];
-      } else if (formData.localPanchayatName === "Gahoi Seva Mandal") {
-        return ["Jalaun"];
-      } else if (formData.localPanchayatName === "Gahoi Vaishya Seva Samiti") {
-        return ["Jalaun"];
-      } else if (
-        formData.localPanchayatName === "Gahoi Vaishya Samaj Panchayat"
-      ) {
-        return ["Jalaun", "Banda"];
-      }
-      return [];
-    }
-
-    // If in Bundelkhand Regional Assembly mappings
+    // Bundelkhand Regional Assembly cases
     if (formData.regionalAssembly === "Bundelkhand Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
-        return ["Jhansi", "Lalitpur"];
-      } else if (
-        formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat"
-      ) {
-        return ["Jhansi", "Tikamgarh", "Lalitpur", "Ghasan"];
-      } else if (
-        formData.localPanchayatName === "Shri Gahoi Vaishya Seva Samiti"
-      ) {
-        return ["Jhansi"];
-      } else if (
-        formData.localPanchayatName ===
-        "Shri Daudayal Gahoi Vaishya Seva Samiti"
-      ) {
-        return ["Lalitpur"];
-      } else if (formData.localPanchayatName === "Gahoi Vaishya Seva Samiti") {
+      if (formData.state === "Uttar Pradesh" && formData.district === "Lalitpur") {
         return ["Lalitpur"];
       }
-      // Add mappings for other Bundelkhand panchayat names
-      return [];
     }
 
-    // Regular mapping for Chambal
-    return localPanchayatMapping[formData.localPanchayatName] || [];
+    // Chaurasi Regional Assembly cases
+    if (formData.regionalAssembly === "Chaurasi Regional Assembly" && formData.state === "Madhya Pradesh") {
+      return [formData.district];
+    }
+
+    // Chambal Regional Assembly cases
+    if (formData.regionalAssembly === "Chambal Regional Assembly") {
+      // For Gwalior
+      if (formData.state === "Madhya Pradesh" && formData.district === "Gwalior") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Samaj Register Brahttar Gwalior" ||
+            formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          return ["Gwalior"];
+        }
+      }
+      // For Bhind
+      if (formData.state === "Madhya Pradesh" && formData.district === "Bhind") {
+        return ["Bhind"];
+      }
+      // For Datia
+      if (formData.state === "Madhya Pradesh" && formData.district === "Datia") {
+        return ["Datia"];
+      }
+      // For Morena
+      if (formData.state === "Madhya Pradesh" && formData.district === "Morena") {
+        return ["Morena"];
+      }
+      // For Jaipur
+      if (formData.state === "Rajasthan" && formData.district === "Jaipur") {
+        return ["Jaipur"];
+      }
+    }
+
+    // Northern Regional Assembly cases
+    if (formData.regionalAssembly === "Northern Regional Assembly") {
+      if (formData.state === "Delhi" && formData.district === "Delhi") {
+        return ["Delhi"];
+      }
+      if (formData.state === "Uttar Pradesh" && formData.district === "Mathura") {
+        return ["Mathura"];
+      }
+    }
+
+    // Vindhya Regional Assembly cases
+    if (formData.regionalAssembly === "Vindhya Regional Assembly") {
+      if (formData.state === "Bihar" && formData.district === "Patna") {
+        return ["Patna"];
+      }
+      if (formData.state === "Uttar Pradesh" && formData.district === "Mahoba") {
+          return ["Mahoba"];
+        }
+    }
+
+   //Vrindha - Chattapur, Panna, Reva, Satna case
+    if (formData.regionalAssembly === "Vindhya Regional Assembly" &&
+        formData.state === "Madhya Pradesh" &&
+        ["Laundi", "Nowgong", "Chhatarpur", "Harpalpur", "Bada Malhera"].includes(formData.city)) {
+      return ["Chhatarpur"];
+    }
+
+
+    if (formData.regionalAssembly === "Vindhya Regional Assembly" &&
+        formData.state === "Madhya Pradesh" &&
+        formData.district === "Panna" &&
+        ["Amanganj", "Panna", "Ajaigarh"].includes(formData.city)) {
+      return ["Panna"];
+    }
+
+if (formData.regionalAssembly === "Vindhya Regional Assembly") {
+      if (formData.district === "Satna" && formData.city === "Satna") {
+        return ["Satna"];
+      }
+    }
+
+    if (formData.regionalAssembly === "Vindhya Regional Assembly") {
+      if (formData.district === "Satna" && formData.city === "Chitrakoot") {
+        return ["Satna"];
+      }
+    }
+
+
+
+    // Mahakaushal Regional Assembly case
+    if (formData.regionalAssembly === "Mahakaushal Regional Assembly") {
+      if (formData.state === "Uttar Pradesh" && formData.district === "Sultanpur") {
+        return ["Gahoi Vaishya Panchayat"];
+      }
+      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+        if (formData.district === "Narsinghpur" && formData.localPanchayatName === "Gahoi Vaishya Panchayat") return ["Narsinghpur"];       
+      }
+        if (formData.localPanchayatName === "Gahoi Vaishya Samaj Panchayat") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Samaj Panchayat") return ["Narsinghpur"];       
+      }
+
+       if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+        if (formData.city === "Sihora" && formData.localPanchayatName === "Gahoi Vaishya Panchayat") return ["Jabalpur"];       
+      }
+
+         if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+        if (formData.city === "Jabalpur" && formData.localPanchayatName === "Gahoi Vaishya Panchayat") return ["Jabalpur"];       
+      }
+      
+       if (formData.localPanchayatName === "Shri Gahoi Vaishya Samaj") {
+        if (formData.city === "Jabalpur" && formData.localPanchayatName === "Shri Gahoi Vaishya Samaj") return ["Jabalpur"];       
+      }
+
+      if (formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat") {
+        if (formData.city === "Umaria" && formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat") return ["Umaria"];       
+      }
+
+      //Sagar
+
+      if (
+              (formData.localPanchayatName === "Gahoi Vaishya Panchayat" && 
+              (formData.city === "Rehli" || formData.city === "Sagar")) ||
+              (formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat" && 
+              (formData.city === "Garhakota" || formData.city === "Deori")) ||
+              (formData.localPanchayatName === "Gahoi Vaishya Samaj" && 
+              formData.city === "Shahgarh")
+            ) {
+              return ["Sagar"];
+            }
+
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat" && 
+          (formData.city === "Seoni" || formData.city === "Lakhnadon")) {
+        return ["Seoni"];
+      }
+
+
+      //Katni
+      if (formData.state === "Madhya Pradesh" && formData.city === "Katni Nagar") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
+          return ["Katni"];
+        }
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat Parishad") {
+          return ["Katni"];
+        }
+      }
+      
+    }
+
+    //Chindwara
+
+     if (formData.state === "Madhya Pradesh" && formData.city === "Chhindwara") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          return ["Chhindwara"];
+        }
+        if (formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat") {
+          return ["Chhindwara"];
+        }
+      }
+      
+  //Panna
+    if (formData.state === "Madhya Pradesh" && formData.city === "Panna") {
+      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+        return ["Panna"];
+      }
+    }
+
+// Hoshangabad
+    if (formData.state === "Madhya Pradesh" && formData.city === "Pipariya") {
+      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+        return ["Hoshangabad"];
+      }
+    }
+// Mandla
+    if (formData.state === "Madhya Pradesh" && formData.city === "Mandla") {    
+      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+        return ["Mandla"];
+      }
+    }
+// Damoh
+    if (formData.state === "Madhya Pradesh" && formData.city === "Hatta") {
+      if (formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat") {
+        return ["Hatta"];
+      }
+    }
+// Shahdol
+    if (formData.state === "Madhya Pradesh" && formData.city === "Shahdol") {
+      if (formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat") {
+        return ["Shahdol"];
+      }
+    }
+// Dindori
+    if (formData.state === "Madhya Pradesh" && formData.city === "Dindori") {
+      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+        return ["Dindori"];
+      }
+    }
+// Guna
+    if (formData.state === "Madhya Pradesh" && formData.city === "Raghogarh") {
+      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+        return ["Guna"];
+      }
+    }
+
+
+
+    // Bundelkhand Regional Assembly cases
+    if (formData.regionalAssembly === "Bundelkhand Regional Assembly") {
+      if (formData.state === "Uttar Pradesh" && formData.district === "Jhansi") {
+        return ["Jhansi"];
+      }
+      if (formData.state === "Madhya Pradesh" && formData.district === "Tikamgarh") {
+        return ["Tikamgarh"];
+      }
+    }
+
+    // Ganga Jamuna Regional Assembly cases
+    if (formData.regionalAssembly === "Ganga Jamuna Regional Assembly") {
+      if (formData.state === "Uttar Pradesh") {
+        if (formData.district === "Jalaun") {
+          return ["Gahoi Vaishya Samaj Panchayat", "Gahoi Vaishya Panchayat Samiti"];
+        }
+        if (formData.district === "Lucknow") {
+          return ["Gahoi Vaishya Panchayat"];
+        }
+        if (formData.district === "Kanpur Nagar") {
+          return ["Gahoi Vaishya Kalyan Samiti"];
+        }
+        if (formData.district === "Chitrakoot") {
+          return ["Gahoi Vaishya Samaj"];
+        }
+        if (formData.district === "Banda") {
+            return ["Gahoi Vaishya Samaj Panchayat"];
+          }
+        if (formData.district === "Auraiya") {
+          return ["Gahoi Vaishya Yuva Samiti"];
+        }
+      }
+    }
+
+    // Chhattisgarh Regional Assembly cases
+    if (formData.regionalAssembly === "Chhattisgarh Regional Assembly") {
+      if (formData.state === "Chhattisgarh") {
+        if (["Durg", "Rajnandgaon", "Dhamtari", "Raipur", "Bilaspur"].includes(formData.district)) {
+            return ["Gahoi Vaishya Panchayat"];
+          }
+        if (["Bastar", "Koriya"].includes(formData.district)) {
+          return ["Gahoi Vaishya Samaj"];
+        }
+      }
+    }
+
+    // Southern Regional Assembly cases
+    if (formData.regionalAssembly === "Southern Regional Assembly") {
+      if (formData.state === "Maharashtra") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          return [formData.city];
+        }
+      }
+
+
+    }
+
+      return [];
   };
 
-  //  local panchayats based on local panchayat and regional assembly
-  const getFilteredSubLocalPanchayats = () => {
-    if (
-      !formData.regionalAssembly ||
-      !formData.localPanchayatName ||
-      !formData.localPanchayat
-    )
-      return [];
+  
 
-    // For Chaurasi Regional Assembly mappings
-    if (formData.regionalAssembly === "Chaurasi Regional Assembly") {
-      const panchayatMapping =
-        CHAURASI_SUB_LOCAL_PANCHAYAT_MAPPING[formData.localPanchayatName];
-      return panchayatMapping
-        ? panchayatMapping[formData.localPanchayat] || []
-        : [];
+  const getFilteredSubLocalPanchayats = () => {
+    if (!formData.regionalAssembly || !formData.localPanchayatName || !formData.localPanchayat) return [];
+
+    // Mahakaushal Regional Assembly cases
+    if (formData.regionalAssembly === "Mahakaushal Regional Assembly" && formData.state === "Madhya Pradesh") {
+      // Narsinghpur district cases
+      if (formData.district === "Narsinghpur") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Narsinghpur") return ["Gotegaon", "Gadarwara", "Barheta", "Narsinghpur", "Chichli", "Saikeda"];
+        }
+        if (formData.localPanchayatName === "Gahoi Vaishya Samaj Panchayat") {
+          if (formData.localPanchayat === "Narsinghpur") return ["Kareli", "Tendukheda(NP)", "Paloha", "Bedu"];
+        }
+
+         if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Seoni") return ["Seoni", "Ganesh Ganj"];
+        }
+      
+      }
+
+        //katni 
+      if (formData.district === "Katni") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
+          if (formData.localPanchayat === "Katni") return ["Kanhwara"];
+        }
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat Parishad") {
+          if (formData.localPanchayat === "Katni") return ["Katni "];
+        }
+      } 
+      
+      // Chindwara
+      if (formData.district === "Chhindwara") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Chhindwara") return ["Junnardeo"];
+        }
+        if (formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Chhindwara") return ["Chhindwara"];
+        }
+      } 
+
+      //Panna
+      if (formData.district === "Panna") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Panna") return ["Shah Nagar", "Pawai", "Kishangarh"];
+        }
+       
+      }
+
+// Hoshangabad district cases
+      if (formData.district === "Hoshangabad") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Hoshangabad") return ["Pipariya"];
+        }
+      
+      }
+
+      //Mandla
+ if (formData.district === "Mandla") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Mandla") return ["Mandla"];
+        }
+      }
+
+    //Damoh
+    if (formData.district === "Damoh") {
+
+        if (formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Hatta") return ["Madhiya Do"];
+        }
+        
+      }
+
+      // Shahdol district cases 
+      if (formData.district === "Shahdol") {
+
+        if (formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Shahdol") return ["Shahdol"];
+        }
+        
+      }
+
+      // Dindori district cases 
+      if (formData.district === "Dindori") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Dindori") return ["Dindori"];
+        }
+      }
+
+      // Guna district cases
+      if (formData.district === "Guna") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Guna") return ["Raghogarh"];
+        }
+      }
+
+      
+      // Jabalpur district cases
+      if (formData.district === "Jabalpur") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Jabalpur") {
+         
+            if (formData.city === "Sihora") {
+              return ["Khitola", "Sihora"];
+            }
+           
+            return ["Jabalpur"];
+          }
+        }
+        if (formData.localPanchayatName === "Shri Gahoi Vaishya Samaj") {
+          if (formData.localPanchayat === "Jabalpur") return ["Jabalpur"];
+        }
+      }
+
+      //sagr district cases
+      if (formData.district === "Sagar") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Sagar")
+
+            if (formData.city === "Rehli" && formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+              return ["Rehli"];
+            }
+                    
+            return ["Sagar"];
+          }     
+      }
+      if (formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Sagar") return ["Garhakota" , "Deori"];
+        }
+        if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
+          if (formData.localPanchayat === "Sagar") return ["Shahgarh"];
+        }
+
+      // Umaria district cases
+      if (formData.district === "Umaria") {
+        if (formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Umaria") return ["Silaudi", "Masur Pani", "Dhuldhuli", "Devri"];
+        }
+      }
+
+      // Seoni district cases
+      if (formData.district === "Seoni") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Seoni") return ["Seoni", "Ganesh Ganji"];
+        }
+      }
+
+
+      return [];
     }
 
-    // For Northern Regional Assembly mappings
-    if (formData.regionalAssembly === "Northern Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Vikas Sansthan") {
-        if (formData.localPanchayat === "Mathura") {
-          return ["Mathura"];
+    // Central Malwa Regional Assembly cases
+    
+
+    // Use SUB_LOCAL_PANCHAYATS mapping for all other assemblies
+    if (SUB_LOCAL_PANCHAYATS[formData.localPanchayat]) {
+      return SUB_LOCAL_PANCHAYATS[formData.localPanchayat];
+    }
+
+    // Bundelkhand Regional Assembly cases
+    if (formData.regionalAssembly === "Bundelkhand Regional Assembly") {
+      if (formData.state === "Uttar Pradesh") {
+        if (formData.district === "Lalitpur") {
+          if (formData.localPanchayatName === "Shri Daudayal Gahoi Vaishya Seva Samiti") {
+            return ["Bansi"];
+          }
+          if (formData.localPanchayatName === "Gahoi Vaishya Seva Samiti") {
+            return ["Lalitpur"];
+          }
+          if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+            return ["Talbehat", "Poora Kalan"];
+          }
+          if (formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat") {
+            return ["Narahat", "War"];
+          }
         }
-      } else if (
-        formData.localPanchayatName === "Shri Gahoi Vaishya Association"
-      ) {
-        if (formData.localPanchayat === "Delhi") {
+        if (formData.district === "Jhansi") {
+          if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+            return [
+              "Garautha",
+              "Barua Sagar",
+              "Simriddha",
+              "Tahrauli",
+              "Gursarai",
+              "Bamor",
+              "Poonchh",
+              "Erich",
+              "Bhel Simrawali",
+              "Babina Cantt",
+              "Bangra Uldan Ranipur",
+              "Mauranipur"
+            ];
+          }
+          if (formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat") {
+            return [
+              "Baragaon",
+              "Ranipur",
+              "Jhansi",
+              "Samthar",
+              "Archara"
+            ];
+          }
+          if (formData.localPanchayatName === "Shri Gahoi Vaishya Seva Samiti") {
+            return ["Moth"];
+          }
+        }
+      }
+      if (formData.state === "Madhya Pradesh" && formData.district === "Tikamgarh") {
+        return [
+          "Tikamgarh",
+          "Baldeogarh",
+          "Jatara",
+          "Palera",
+          "Niwari",
+          "Prithvipur",
+          "Orchha",
+          "Badagaon",
+          "Mohangarh",
+          "Digoda",
+          "Lidhora",
+          "Khargapur"
+        ];
+      }
+    }
+
+    // Chaurasi Regional Assembly cases
+    if (formData.regionalAssembly === "Chaurasi Regional Assembly") {
+      switch (formData.district) {
+        case "Shivpuri":
+          if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+            return ["Shivpuri", "Mahalwani", "Pipara", "Bamour Damaron", "Manpura", "Pichhore"];
+          }
+          if (formData.localPanchayatName === "Shri Gahoi Vaishya Sabha") {
+            return ["Karera", "Bhauti"];
+          }
+          break;
+        case "Rewa":
+          if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+            return ["Rewa", "Semaria", "Pipara"];
+          }
+          break;
+        case "Satna":
+          if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+            return ["Satna", "Kotar", "Semari"];
+          }
+          break;
+        case "Ashoknagar":
+          if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+            return ["Ashoknagar", "Bamore Kalan"];
+          }
+          if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
+            return ["Dinara", "Guna"];
+          }
+          break;
+        case "Guna":
+          if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+            return ["Guna"];
+          }
+          break;
+        default:
+          return [];
+      }
+    }
+
+    // Ganga Jamuna Regional Assembly cases
+    if (formData.regionalAssembly === "Ganga Jamuna Regional Assembly") {
+      if (formData.state === "Uttar Pradesh") {
+        if (formData.district === "Jalaun") {
+          if (formData.localPanchayatName === "Gahoi Seva Mandal") {
+            return ["Orai"];
+          }
+          if (formData.localPanchayatName === "Gahoi Vaishya Seva Samiti") {
+            return ["Konch"];
+          }
+          if (formData.localPanchayatName === "Gahoi Vaishya Samaj Panchayat") {
+            return ["Madhogarh", "Jalaun"];
+          }
+        }
+        if (formData.district === "Lucknow") {
+          if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+            return ["Lucknow", "Bakshi Ka Talab", "Malihabad"];
+          }
+        }
+        if (formData.district === "Kanpur Nagar") {
+          if (formData.localPanchayatName === "Gahoi Vaishya Kalyan Samiti") {
+            return ["Kanpur", "Bilhaur", "Ghatampur"];
+          }
+        }
+        if (formData.district === "Chitrakoot") {
+          if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
+            return ["Karwi", "Mau", "Bharatkoop"];
+          }
+        }
+        if (formData.district === "Banda") {
+          if (formData.localPanchayatName === "Gahoi Vaishya Samaj Panchayat") {
+            return ["Banda", "Naraini", "Baberu"];
+          }
+        }
+        if (formData.district === "Auraiya") {
+          if (formData.localPanchayatName === "Gahoi Vaishya Yuva Samiti") {
+            return ["Auraiya", "Dibiyapur", "Phaphund"];
+          }
+        }
+      }
+    }
+
+    // Northern Regional Assembly cases
+    if (formData.regionalAssembly === "Northern Regional Assembly") {
+      if (formData.state === "Uttar Pradesh") {
+        if (formData.district === "Mathura") {
+          if (formData.localPanchayatName === "Gahoi Vaishya Vikas Sansthan") {
+            return ["Mathura", "Vrindavan", "Govardhan"];
+          }
+        }
+      }
+      if (formData.state === "Delhi" && formData.district === "Delhi") {
+        if (formData.localPanchayatName === "Shri Gahoi Vaishya Association") {
           return ["Delhi"];
         }
       }
-      return [];
     }
 
-    // For Southern Regional Assembly mappings
-    if (formData.regionalAssembly === "Southern Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
-        switch (formData.localPanchayat) {
-          case "Nagpur":
-            return ["Nagpur"];
-          case "Pune":
-            return ["Pune"];
-          case "Amravati":
-            return ["Amravati"];
-          case "Mumbai":
-            return ["Mumbai"];
-          case "Chalisgaon":
-            return ["Chalisgaon"];
-          case "Dhuliya":
-            return ["Dhuliya"];
-          case "Other":
-            return ["Other"];
-          default:
-            return [];
-        }
-      }
-      return [];
-    }
-
-    // For Chhattisgarh Regional Assembly mappings
-    if (formData.regionalAssembly === "Chhattisgarh Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
-        switch (formData.localPanchayat) {
-          case "Durg":
-            return ["Durg"];
-          case "Rajnandgaon":
-            return ["Rajnandgaon"];
-          case "Dhamtari":
-            return ["Dhamtari"];
-          case "Raipur":
-            return ["Raipur"];
-          case "Bilaspur":
-            return ["Bilaspur"];
-          case "Nagpur":
-            return ["Nagpur"];
-          case "Pune":
-            return ["Pune"];
-          case "Amravati":
-            return ["Amravati"];
-          case "Mumbai":
-            return ["Mumbai"];
-          case "Chalisgaon":
-            return ["Chalisgaon"];
-          case "Dhuliya":
-            return ["Dhuliya"];
-          case "Other":
-            return ["Other"];
-          default:
-            return [];
-        }
-      } else if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
-        switch (formData.localPanchayat) {
-          case "Jagdalpur":
-            return ["Jagdalpur"];
-          case "Baikunthpur":
-            return ["Baikunthpur"];
-          default:
-            return [];
-        }
-      }
-      return [];
-    }
-
-    // For Vindhya Regional Assembly mappings
+    // Vindhya Regional Assembly cases
     if (formData.regionalAssembly === "Vindhya Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
-        switch (formData.localPanchayat) {
-          case "Chhatarpur":
-            return [
-              "Bameetha",
-              "Chhatarpur",
-              "Maharajpur",
-              "Naugaon",
-              "Bijawar",
-              "Chandra Nagar",
-              "Gulgaj",
-              "Bakswaha",
-              "Gadhi Malhara",
-              "Lavkush Nagar",
-              "Alipur",
-              "Tatam",
-              "Harpalpur",
-              "Ishanagar",
-              "Bada Malhara",
-            ];
-          case "Panna":
-            return [
-              "Amanaganj",
-              "Panna",
-              "Ajaigarh",
-              "Gunnor",
-              "Mohendra",
-              "Simariya",
-              "Sunwani Kala",
-              "Kishangarh",
-            ];
-          case "Satna":
-            return ["Satna", "Nayagaon Chitrakoot"];
-          case "Rewa":
-            return ["Rewa"];
-          default:
-            return [];
-        }
-      } else if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
-        if (formData.localPanchayat === "Mahoba") {
-          return ["Mahoba"];
-        }
-      } else if (formData.localPanchayatName === "Shri Gahoi Vaishya Sabha") {
-        if (formData.localPanchayat === "Patna City") {
+      if (formData.state === "Bihar" && formData.district === "Patna") {
+        if (formData.localPanchayatName === "Shri Gahoi Vaishya Sabha") {
           return ["Patna City"];
         }
       }
-      return [];
+      if (formData.state === "Uttar Pradesh" && formData.district === "Mahoba") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
+          return ["Mahoba"];
+        }
+      }
     }
 
-    // For Mahakaushal Regional Assembly mappings
-    if (formData.regionalAssembly === "Mahakaushal Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
-        switch (formData.localPanchayat) {
-          case "Narsinghpur":
-            return [
-              "Gote Gaon",
-              "Gadarwara",
-              "Barheta Narsinghpur",
-              "Narsinghpur",
-              "Mugawani",
-              "Chichli",
-              "Sai Kheda",
-            ];
-          case "Jabalpur":
-            return ["Jabalpur", "Khitola", "Sihora"];
-          case "Sagar":
-            return ["Rehli", "Sagar"];
-          case "Seoni":
-            return ["Ganesh Ganj", "Seoni"];
-          case "Chhindwara":
-            return ["Junnardev"];
-          case "Panna":
-            return ["Shahnagar", "Pawai", "Krishnagarh"];
-          case "Hoshangabad":
-            return ["Pipariya"];
-          case "Mandla":
-            return ["Mandla"];
-          case "Dindori":
-            return ["Dindori"];
-          case "Guna":
-            return ["Raghav Garh"];
-          case "Sultanpur":
-            return ["Visani"];
-          default:
-            return [];
+    // Vrindha - Chattapur, Panna, Reva, Satna case
+     if (formData.city === "Laundi") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Chhatarpur") return ["Lavkush Nagar"];
         }
-      } else if (
-        formData.localPanchayatName === "Gahoi Vaishya Samaj Panchayat"
-      ) {
-        if (formData.localPanchayat === "Narsinghpur") {
-          return ["Kareli", "Paloha", "Tendu Kheda", "Bedu"];
+       } 
+
+       if (formData.city === "Nowgong") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Chhatarpur") return ["Alipur"];
         }
-      } else if (
-        formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat"
-      ) {
-        switch (formData.localPanchayat) {
-          case "Umariya":
-            return ["Silaudi", "Masur Pani", "Dhuldhuli", "Deori"];
-          case "Sagar":
-            return ["Gadhakota", "Deori Kalan"];
-          case "Chhindwara":
-            return ["Chhindwara"];
-          case "Hata":
-            return ["Madhiya Do"];
-          case "Shahdol":
-            return ["Shahdol"];
-          default:
-            return [];
+       } 
+
+        if (formData.city === "Chattarpur") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Chhatarpur") return ["Tatam"];
         }
-      } else if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
-        switch (formData.localPanchayat) {
-          case "Sagar":
-            return ["Shahgarh"];
-          case "Katni":
-            return ["Kanhwara"];
-          default:
-            return [];
+       }
+
+        if (formData.city === "Harpalpur") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Chhatarpur") return ["Harpalpur"];
         }
-      } else if (
-        formData.localPanchayatName === "Gahoi Vaishya Panchayat Parishad"
-      ) {
-        if (formData.localPanchayat === "Katni") {
-          return ["Katni"];
+       }
+
+         if (formData.city === "Chattarpur") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Chhatarpur") return ["Ishanagar"];
         }
-      } else if (formData.localPanchayatName === "Shri Gahoi Vaishya Samaj") {
-        if (formData.localPanchayat === "Jabalpur") {
-          return ["Machhgawan"];
+       }
+
+           if (formData.city === "Bada Malhera") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Chhatarpur") return ["Bada Malhera"];
+        }
+       }
+
+        if (formData.city === "Amanganj") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Panna") return ["Amanganj"];
+        }
+        
+       } 
+
+        if (formData.city === "Panna") {
+       if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Panna") return ["Panna" , "Gunnor", "Mohendra", "Simariya", "Sunwani Kala", "Kishangarh" ];
+        } 
+      }
+
+       if (formData.city === "Ajaigarh") {
+       if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Panna") return ["Ajaigarh"];
+        } 
+      }
+
+      if (formData.city === "Chitrakoot") {
+       if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Satna") return ["Nayagaon Chitrakoot"];
+        } 
+      }
+
+         if (formData.city === "Satna") {
+       if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          if (formData.localPanchayat === "Satna") return ["Satna"];
+        } 
+      }
+
+
+
+    // Chhattisgarh Regional Assembly cases
+    if (formData.regionalAssembly === "Chhattisgarh Regional Assembly") {
+      if (formData.state === "Chhattisgarh") {
+        if (["Durg", "Rajnandgaon", "Dhamtari", "Raipur", "Bilaspur"].includes(formData.district)) {
+          if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+            return [formData.district];
+          }
+        }
+        if (["Bastar", "Koriya"].includes(formData.district)) {
+          if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
+            return [formData.district];
+          }
         }
       }
-      return [];
     }
 
-    // For Central Malwa Regional Assembly mappings
-    if (formData.regionalAssembly === "Central Malwa Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
-        if (formData.localPanchayat === "Indore") {
-          return ["Indore"];
-        }
-      } else if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
-        if (formData.localPanchayat === "Ujjain") {
-          return ["Ujjain"];
-        } else if (formData.localPanchayat === "Bhopal") {
-          return ["Bhopal"];
-        }
-      } else if (
-        formData.localPanchayatName === "Gahoi Vaishya Samaj Kalyan Samiti"
-      ) {
-        if (formData.localPanchayat === "Vidisha") {
-          return ["Vidisha"];
-        }
-      } else if (
-        formData.localPanchayatName === "Gahoi Vaishya Samaj Panchayat"
-      ) {
-        if (formData.localPanchayat === "Bhopal") {
-          return ["Berasia"];
-        }
-      } else if (
-        formData.localPanchayatName === "Shri Gahoi Vaishya Samaj Panchayat"
-      ) {
-        if (formData.localPanchayat === "Raisen") {
-          return ["Begumganj"];
+    // Southern Regional Assembly cases
+    if (formData.regionalAssembly === "Southern Regional Assembly") {
+      if (formData.state === "Maharashtra") {
+        if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
+          return [formData.district];
         }
       }
-      return [];
     }
 
-    // For Chaurasi Regional Assembly mappings
-    if (formData.regionalAssembly === "Chaurasi Regional Assembly") {
-      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
-        if (formData.localPanchayat === "Shivpuri") {
-          return [
-            "Shivpuri",
-            "Malhawani",
-            "Pipara",
-            "Semri",
-            "Bamore Damaroun",
-            "Manpura",
-            "Pichhore",
-          ];
-        } else if (formData.localPanchayat === "Ashok Nagar") {
-          return ["Ashok Nagar", "Bamore Kala"];
-        } else if (formData.localPanchayat === "Guna") {
-          return ["Guna"];
-        } else if (formData.localPanchayat === "Ahmedabad") {
-          return ["Gandhi Nagar"];
-        }
-      } else if (formData.localPanchayatName === "Shri Gahoi Vaishya Sabha") {
-        if (formData.localPanchayat === "Shivpuri") {
-          return ["Karera", "Bhonti"];
-        }
-      } else if (formData.localPanchayatName === "Gahoi Vaishya Samaj") {
-        if (formData.localPanchayat === "Ashok Nagar") {
-          return ["Dinara", "Guna"];
-        }
-      }
-      return [];
-    }
-
-    // For Ganga Jamuna Regional Assembly mappings
-    if (formData.regionalAssembly === "Ganga Jamuna Regional Assembly") {
-      if (
-        formData.localPanchayat === "Jalaun" &&
-        formData.localPanchayatName === "Gahoi Vaishya Panchayat Samiti"
-      ) {
-        return ["Jalaun"];
-      } else if (formData.localPanchayat === "Kanpur") {
-        return ["Kanpur"];
-      } else if (formData.localPanchayat === "Auraiya") {
-        return ["Auraiya"];
-      } else if (formData.localPanchayat === "Lucknow") {
-        return ["Lucknow"];
-      } else if (formData.localPanchayat === "Karvi") {
-        return ["Karvi"];
-      } else if (
-        formData.localPanchayat === "Jalaun" &&
-        formData.localPanchayatName === "Gahoi Seva Mandal"
-      ) {
-        return ["Orai"];
-      } else if (
-        formData.localPanchayat === "Jalaun" &&
-        formData.localPanchayatName === "Gahoi Vaishya Seva Samiti"
-      ) {
-        return ["Konch"];
-      } else if (
-        formData.localPanchayat === "Jalaun" &&
-        formData.localPanchayatName === "Gahoi Vaishya Samaj Panchayat"
-      ) {
-        return ["Madhogarh", "Jalaun"];
-      } else if (formData.localPanchayat === "Banda") {
-        return ["Banda"];
-      }
-      return [];
-    }
-
-    // For Bundelkhand Regional Assembly mappings
-    if (formData.regionalAssembly === "Bundelkhand Regional Assembly") {
-      // For Gahoi Vaishya Panchayat
-      if (formData.localPanchayatName === "Gahoi Vaishya Panchayat") {
-        if (formData.localPanchayat === "Jhansi") {
-          return [
-            "Garotha",
-            "Barua Sagar",
-            "Simriddha",
-            "Tahrauli",
-            "Gursarai",
-            "Bamore",
-            "Poonch",
-            "Erich",
-            "BHEL Simrawali",
-            "Bangra Uldan Ranipur",
-            "Mau Ranipur",
-          ];
-        } else if (formData.localPanchayat === "Lalitpur") {
-          return ["Purakala"];
-        }
-      }
-
-      // For Shri Gahoi Vaishya Panchayat
-      if (formData.localPanchayatName === "Shri Gahoi Vaishya Panchayat") {
-        if (formData.localPanchayat === "Jhansi") {
-          return [
-            "Bada Gaon",
-            "Ranipur",
-            "Raksha",
-            "Jhansi",
-            "Samthar",
-            "Archra",
-          ];
-        } else if (formData.localPanchayat === "Tikamgarh") {
-          return [
-            "Shaktibairo",
-            "Niwari",
-            "Jeron",
-            "Prithvipur",
-            "Simra",
-            "Manjna",
-            "Taricharkala",
-            "Tikamgarh",
-          ];
-        } else if (formData.localPanchayat === "Lalitpur") {
-          return ["Talbehat", "Narahat", "Vangua Kala", "War"];
-        } else if (formData.localPanchayat === "Ghasan") {
-          return ["Bada Gaon"];
-        }
-      }
-
-      // For Shri Gahoi Vaishya Seva Samiti
-      if (formData.localPanchayatName === "Shri Gahoi Vaishya Seva Samiti") {
-        if (formData.localPanchayat === "Jhansi") {
-          return ["Moth"];
-        }
-      }
-
-      // For Shri Daudayal Gahoi Vaishya Seva Samiti
-      if (
-        formData.localPanchayatName ===
-        "Shri Daudayal Gahoi Vaishya Seva Samiti"
-      ) {
-        if (formData.localPanchayat === "Lalitpur") {
-          return ["Bansi"];
-        }
-      }
-
-      // For Gahoi Vaishya Seva Samiti
-      if (formData.localPanchayatName === "Gahoi Vaishya Seva Samiti") {
-        if (formData.localPanchayat === "Lalitpur") {
-          return ["Lalitpur"];
-        }
-      }
-
-      return [];
-    }
-
-    // mapping for Chambal
-    if (formData.localPanchayat && formData.localPanchayatName) {
-      return (
-        subLocalPanchayatMapping[formData.localPanchayat]?.[
-          formData.localPanchayatName
-        ] || []
-      );
-    }
     return [];
   };
 
   // Mapping for Local Panchayat based on Local Panchayat Name
   const localPanchayatMapping = {
     "Gahoi Vaishya Samaj Register Brahttar Gwalior": ["Gwalior"],
-    "Gahoi Vaishya Panchayat": ["Gwalior", "Bhind", "Datia", "Jaipur"],
+    "Gahoi Vaishya Panchayat": ["Gwalior", "Bhind", "Datia", "Jaipur", "Shivpuri", "Rewa", "Satna", "Guna", "Ashoknagar"],
     "Gahoi Vaishya Sabha": ["Bhind"],
-    "Gahoi Vaishya Samaj": ["Morena"],
+    "Shri Gahoi Vaishya Sabha": ["Shivpuri"],
+    "Gahoi Vaishya Samaj": ["Morena", "Ashoknagar"],
     "Gahoi Seva Mandal": ["Jalaun"],
     "Gahoi Vaishya Seva Samiti": ["Jalaun"],
     "Gahoi Vaishya Samaj Panchayat": ["Jalaun", "Banda"],
@@ -3834,7 +4291,7 @@ const RegistrationForm = () => {
         >
           <path
             fillRule="evenodd"
-            d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+            d="M14.243 5.757a6 6 0 10-.986 9.284 1 1 0 111.087 1.678A8 8 0 1118 10a3 3 0 01-4.8 2.401A4 4 0 1114 10a1 1 0 102 0c0-1.537-.586-3.07-1.757-4.243zM12 10a2 2 0 10-4 0 2 2 0 004 0z"
             clipRule="evenodd"
           />
         </svg>
@@ -3951,14 +4408,14 @@ const RegistrationForm = () => {
                   ? "border-red-500 bg-red-50 error-field"
                   : "border-gray-300"
               }`}
+              disabled={!formData.district}
             >
               <option value="">Select City</option>
-              {formData.state &&
-                STATE_TO_CITIES[formData.state]?.map((city, index) => (
-                  <option key={index} value={city}>
-                    {city}
-                  </option>
-                ))}
+              {formData.state && formData.district && DISTRICT_TO_CITIES[formData.state]?.[formData.district]?.map((city, index) => (
+                <option key={index} value={city}>
+                  {city}
+                </option>
+              ))}
             </select>
             {hasError("city") && (
               <p className="text-red-500 text-xs">{errors.city}</p>
@@ -4337,6 +4794,27 @@ const RegistrationForm = () => {
     );
   };
 
+  // Inside the RegistrationForm component, add this function after the imports
+  const openWhatsAppShare = (mobileNumber) => {
+    if (mobileNumber?.length === 10) {
+      const message = 'Join our Gahoi community! Register here:';
+      const url = window.location.origin + '/register';
+      window.open(`https://wa.me/91${mobileNumber}?text=${encodeURIComponent(message + ' ' + url)}`, '_blank');
+    }
+  };
+
+  // Helper function to get existing panchayats
+  const getExistingPanchayats = (district) => {
+    try {
+      const existingCase = getFilteredLocalPanchayatNames().find(name => 
+        name === district
+      );
+      return existingCase ? [existingCase] : [];
+    } catch {
+      return [];
+    }
+  };
+
   return (
     <div
       className="min-h-screen py-8 px-4 flex items-center justify-center relative"
@@ -4345,7 +4823,7 @@ const RegistrationForm = () => {
         backgroundSize: "cover",
         backgroundRepeat: "no-repeat",
         backgroundPosition: "center",
-        backgroundColor: "#1e293b", // Fallback color
+        backgroundColor: "#1e293b", 
       }}
     >
       {/* Back to Home Button */}
@@ -4470,3 +4948,10 @@ const RegistrationForm = () => {
 };
 
 export default RegistrationForm;
+
+
+
+
+
+
+

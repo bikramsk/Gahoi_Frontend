@@ -22,6 +22,33 @@ const fetchLoginPageData = async () => {
   }
 };
 
+// Function to check if user exists in Strapi backend
+const checkUserExists = async (mobileNumber) => {
+  try {
+    const baseUrl = 'http://localhost:1337';
+    const url = `${baseUrl}/api/registration-pages?filters[personal_information][mobile_number][$eq]=${mobileNumber}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      console.error('API Response not ok:', response.status, response.statusText);
+      throw new Error('Failed to check user existence');
+    }
+
+    const data = await response.json();
+    return data.data && data.data.length > 0;
+
+  } catch (error) {
+    console.error('Error checking user existence:', error);
+    return false;
+  }
+};
+
 const response = await fetchLoginPageData();
 const baseUrl = 'http://localhost:1337';
 const logoUrl = response?.data?.[0]?.logo?.url;
@@ -41,6 +68,8 @@ const Login = () => {
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [checkingUser, setCheckingUser] = useState(false);
+  const [userExists, setUserExists] = useState(false);
   const [recaptchaVerified, setRecaptchaVerified] = useState(false);
   const recaptchaRef = useRef(null);
   const [processSteps, setProcessSteps] = useState([
@@ -91,6 +120,13 @@ const Login = () => {
         [name]: ''
       }));
     }
+
+    // Reset user existence check when mobile number changes
+    if (name === 'mobileNumber') {
+      setUserExists(false);
+      setShowOtpInput(false);
+      setOtpSent(false);
+    }
   };
 
   const handleOtpChange = (e) => {
@@ -133,19 +169,35 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSendOtp = async () => {
+  // Function to check user existence before sending OTP
+  const handleCheckUserAndSendOtp = async () => {
     if (formData.mobileNumber.length === 10 && recaptchaVerified) {
-      setLoading(true);
+      setCheckingUser(true);
+      setErrors({});
+      
       try {
-        // Instead of actually calling the API, we'll simulate a successful OTP send
-        // await authAPI.sendOTP(formData.mobileNumber);
+        const exists = await checkUserExists(formData.mobileNumber);
         
-        // Simulate network delay
+        if (exists) {
+          setUserExists(true);
+          setErrors({ 
+            mobileNumber: 'This mobile number is already registered. Please use a different number.' 
+          });
+          setCheckingUser(false);
+          return;
+        }
+
+        // If user doesn't exist, proceed with OTP sending
+        setLoading(true);
+        setCheckingUser(false);
+        
+        // Simulate OTP send API call
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         setOtpSent(true);
         setShowOtpInput(true);
         setErrors({});
+        setUserExists(false);
         
         // Update steps progress
         const updatedSteps = [...processSteps];
@@ -153,18 +205,16 @@ const Login = () => {
         setProcessSteps(updatedSteps);
         
       } catch (error) {
-        console.error('Error sending OTP:', error);
-        let errorMessage = t('login.errors.otpSendError');
-        
-        if (error.error?.message) {
-          errorMessage = error.error.message;
-        } else if (error.message) {
-          errorMessage = error.message;
-        }
-        
-        setErrors({ mobileNumber: errorMessage });
+        console.error('Error in user check or OTP send:', error);
+        setErrors({ 
+          mobileNumber: 'Unable to verify mobile number. Please try again later.' 
+        });
+        setUserExists(false);
+        setOtpSent(false);
+        setShowOtpInput(false);
       } finally {
         setLoading(false);
+        setCheckingUser(false);
       }
     }
   };
@@ -179,14 +229,11 @@ const Login = () => {
           setErrors({ mobileNumber: t('login.errors.recaptcha') });
           return;
         }
-        handleSendOtp();
+        await handleCheckUserAndSendOtp();
       } else {
         setLoading(true);
         try {
           // Simulate OTP verification - accept any 6-digit OTP
-          // const response = await authAPI.verifyOTP(formData.mobileNumber, formData.otp);
-          
-          // Simulate network delay
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           // Simulate successful verification
@@ -365,15 +412,15 @@ const Login = () => {
                     inputMode="numeric"
                     maxLength={10}
                     placeholder={t('login.mobilePlaceholder')}
-                    disabled={showOtpInput || loading}
+                    disabled={showOtpInput || loading || checkingUser}
                   />
                   {hasError('mobileNumber') && (
                     <p className="text-red-500 text-[10px] sm:text-xs">{errors.mobileNumber}</p>
                   )}
                 </div>
 
-                {/* CAPTCHA */}
-                {!showOtpInput && (
+                {/* CAPTCHA - Only show if user doesn't exist and OTP input is not shown */}
+                {!showOtpInput && !userExists && (
                   <div className="space-y-2 sm:space-y-3">
                     <div className="flex justify-center transform scale-90 sm:scale-100 origin-top">
                       <ReCAPTCHA
@@ -386,8 +433,8 @@ const Login = () => {
                   </div>
                 )}
 
-                {/* OTP Input */}
-                {showOtpInput && (
+                {/* OTP Input - Only show if user doesn't exist */}
+                {showOtpInput && !userExists && (
                   <div className="space-y-2 sm:space-y-3">
                     <div className="flex justify-between items-center">
                       <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center">
@@ -400,7 +447,7 @@ const Login = () => {
                         <div className="flex space-x-2">
                           <button
                             type="button"
-                            onClick={handleSendOtp}
+                            onClick={handleCheckUserAndSendOtp}
                             className="text-[10px] sm:text-xs text-red-700 hover:text-red-800"
                           >
                             {t('login.resendOtp')}
@@ -435,19 +482,19 @@ const Login = () => {
 
                 {/* Action Buttons */}
                 <div className="flex items-center justify-between pt-1">
-                  {!showOtpInput ? (
+                  {!showOtpInput && !userExists ? (
                     <div className="flex w-full justify-between gap-2">
                       <button 
                         type="submit" 
-                        disabled={loading || (!showOtpInput && !recaptchaVerified)}
+                        disabled={loading || checkingUser || (!showOtpInput && !recaptchaVerified)}
                         className={`bg-red-700 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 font-medium text-xs sm:text-sm ${
-                          loading || (!showOtpInput && !recaptchaVerified) ? 'opacity-75 cursor-not-allowed' : ''
+                          loading || checkingUser || (!showOtpInput && !recaptchaVerified) ? 'opacity-75 cursor-not-allowed' : ''
                         }`}
                       >
-                        {loading ? t('login.sending') : t('login.sendOtp')}
+                        {checkingUser ? 'Checking...' : (loading ? t('login.sending') : t('login.sendOtp'))}
                       </button>
                     </div>
-                  ) : (
+                  ) : showOtpInput && !userExists ? (
                     <div className="flex w-full justify-between gap-2">
                       <button 
                         type="submit" 
@@ -459,7 +506,7 @@ const Login = () => {
                         {loading ? t('login.verifying') : t('login.verifyOtp')}
                       </button>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </form>
             </div>

@@ -7,6 +7,9 @@ export const STATE_TO_ASSEMBLIES = {
     "Bundelkhand Regional Assembly",
     "Chaurasi Regional Assembly"
   ],
+  "Gujarat": [
+    "Chaurasi Regional Assembly"
+  ],
   "Uttar Pradesh": [
     "Ganga Jamuna Regional Assembly",
     "Northern Regional Assembly"
@@ -57,14 +60,30 @@ export const WORK_TYPES = [
   "Other"
 ];
 
+
+// Business Owner
+// Professional
+// Skilled Worker
+// Government Service
+// Private Sector Employee
+// Freelancer/Consultant
+// Retired
+// Other
+
 export const EMPLOYMENT_TYPES = [
   "Full-time",
   "Part-time",
-  "Contract",
+  "Contract/Temporary",
   "Self-employed",
-  "Business Owner",
   "Not Currently Employed"
 ];
+
+
+// Full-time
+// Part-time
+// Contract/Temporary
+// Self-employed
+// Not Currently Employed
 
 export const HANDICAP_OPTIONS = ["None", "Physically", "Mentally", "Other"];
 export const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -73,7 +92,7 @@ export const INITIAL_FAMILY_MEMBERS = [
   { relation: "Father", name: "", mobileNumber: "" },
   { relation: "Mother", name: "", mobileNumber: "" },
   { relation: "Spouse", name: "", mobileNumber: "" },
-  { relation: "Sibling", name: "", mobileNumber: "", gender: "", age: "", occupation: "", education: "", maritalStatus: "", isDependent: false },
+  { relation: "Sibling", name: "", mobileNumber: "", gender: "", age: "", maritalStatus: "", isDependent: false },
   { relation: "Child", name: "", mobileNumber: "", gender: "" }
 ];
 
@@ -83,13 +102,8 @@ export const MARITAL_STATUS_OPTIONS = ["Married", "Unmarried"];
 export const EDUCATION_OPTIONS = ["Primary", "Secondary", "Higher Secondary", "Graduate", "Post Graduate", "Other"];
 export const OCCUPATION_OPTIONS = ["Student", "Employed", "Self-Employed", "Business", "Homemaker", "Other"];
 export const SIBLING_RELATION_OPTIONS = [
-  "Father's (Elder) Brother ताऊ",
-  "Father's (Younger) Brother चाचा",
-  "Father's Sister बुआ",
-  "Mother's Brother मामा",
-  "Mother's Sister मौसी",
-  "Sister बहन",
-  "Brother भाई"
+"Sister बहन",
+"Brother भाई"
 ];
 
 export const FORM_STEPS = [
