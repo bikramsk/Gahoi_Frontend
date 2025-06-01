@@ -566,6 +566,8 @@ export const formatFormData = (data, displayPictureId = null) => {
       mother_mobile: data.familyDetails[1]?.mobileNumber ?? "",
       spouse_name: data.familyDetails[2]?.name ?? "",
       spouse_mobile: data.familyDetails[2]?.mobileNumber ?? "",
+      gotra: data.marriageToAnotherCaste ? "Others" : (data.gotra ?? ""),
+      aakna: data.marriageToAnotherCaste ? "Others" : (data.aakna ?? ""),
       siblingDetails: data.familyDetails
         .filter(member => member.relation === "Sibling")
         .map((sibling) => ({
@@ -588,8 +590,6 @@ export const formatFormData = (data, displayPictureId = null) => {
         phone_number: child.mobileNumber ?? ""
       })),
     biographical_details: {
-      Gotra: data.marriageToAnotherCaste ? "Others" : (data.gotra ?? ""),
-      Aakna: data.marriageToAnotherCaste ? "Others" : (data.aakna ?? ""),
       manglik_status: data.manglik ?? "",
       Grah: data.grah ?? "",
       Handicap: data.handicap ?? "",

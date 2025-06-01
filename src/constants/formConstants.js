@@ -129,10 +129,10 @@ export const FORM_STEPS = [
     ],
   },
   { name: "Family Information", fields: ["familyDetails"] },
-  {
-    name: "Biographical Details",
-    fields: ["manglik", "grah", "handicap", "gotra", "aakna"],
-  },
+  // {
+  //   name: "Biographical Details",
+  //   fields: ["manglik", "grah", "handicap", "gotra", "aakna"],
+  // },
   {
     name: "Work Information",
     fields: [
@@ -149,7 +149,7 @@ export const FORM_STEPS = [
   },
   {
     name: "Final Submission",
-    fields: ["suggestions", "date", "referenceBy"],
+    fields: ["suggestions", "date", "referenceBy", "confirmAccuracy"],
   },
 ];
 
@@ -199,4 +199,5 @@ export const INITIAL_FORM_DATA = {
   localPanchayatName: "",
   subLocalPanchayat: "",
   isGahoi: "Yes",
+  confirmAccuracy: false,
 }; 
