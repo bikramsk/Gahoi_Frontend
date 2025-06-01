@@ -78,29 +78,6 @@ const Login = () => {
     { name: t('login.steps.registration'), completed: false },
     { name: t('login.steps.completion'), completed: false }
   ]);
-  
-  // Hide header, footer and other
-  useEffect(() => {
-    
-    const header = document.querySelector('header');
-    const footer = document.querySelector('footer');
-    const nav = document.querySelector('nav');
-    
-    if (header) header.style.display = 'none';
-    if (footer) footer.style.display = 'none';
-    if (nav) nav.style.display = 'none';
-    
-    
-    document.body.classList.add('fullscreen-form');
-    
-    // Cleanup function 
-    return () => {
-      if (header) header.style.display = '';
-      if (footer) footer.style.display = '';
-      if (nav) nav.style.display = '';
-      document.body.classList.remove('fullscreen-form');
-    };
-  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
