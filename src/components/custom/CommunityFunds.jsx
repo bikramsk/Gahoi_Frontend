@@ -146,13 +146,23 @@ const CommunityFunds = () => {
   const filteredContributors = useMemo(() => {
     if (!searchTerm) return regularContributors;
     
-    const searchLower = searchTerm.toLowerCase();
-    return regularContributors.filter(contributor => 
-      contributor.name.toLowerCase().includes(searchLower) ||
-      contributor.role.toLowerCase().includes(searchLower) ||
-      contributor.contribution.monthly.toLowerCase().includes(searchLower) ||
-      contributor.impact.toLowerCase().includes(searchLower)
-    );
+    const searchLower = searchTerm.toLowerCase().trim();
+    return regularContributors.filter(contributor => {
+    
+      const name = contributor.name?.toLowerCase() || '';
+      const role = contributor.role?.toLowerCase() || '';
+      const monthlyContribution = contributor.contribution?.monthly?.toLowerCase() || '';
+      const impact = contributor.impact?.toLowerCase() || '';
+      const place = contributor.place?.toLowerCase() || '';
+      const purpose = contributor.purpose?.toLowerCase() || '';
+
+      return name.includes(searchLower) ||
+             role.includes(searchLower) ||
+             monthlyContribution.includes(searchLower) ||
+             impact.includes(searchLower) ||
+             place.includes(searchLower) ||
+             purpose.includes(searchLower);
+    });
   }, [searchTerm, regularContributors]);
 
   // Calculate pagination
@@ -161,7 +171,12 @@ const CommunityFunds = () => {
   const currentRecords = filteredContributors.slice(indexOfFirstRecord, indexOfLastRecord);
   const totalPages = Math.ceil(filteredContributors.length / recordsPerPage);
 
-  // Handle page change
+  
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
