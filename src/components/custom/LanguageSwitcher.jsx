@@ -16,7 +16,7 @@ const LanguageSwitcher = () => {
       title={isHindi ? 'Switch to English' : 'हिंदी में बदलें'}
     >
       <span 
-        className={`text-xs font-semibold w-5 text-center ${
+        className={`text-xs font-semibold w-5 text-center font-english ${
           !isHindi ? "text-[#FD7D01] font-bold" : "text-red-800"
         }`}
       >
@@ -36,7 +36,7 @@ const LanguageSwitcher = () => {
         />
       </div>
       <span 
-        className={`text-xs font-semibold w-5 text-center ${
+        className={`text-xs font-semibold w-5 text-center font-hindi ${
           isHindi ? "text-[#FD7D01] font-bold" : "text-red-800"
         }`}
       >
