@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 const Contact = () => {
   const { t, i18n } = useTranslation();
@@ -17,6 +17,8 @@ const Contact = () => {
 
   // Language-specific font class
   const languageFontClass = i18n.language === "hi" ? "font-hindi" : "font-english";
+
+  const API_URL = import.meta.env.VITE_PUBLIC_STRAPI_API_URL;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,7 +69,7 @@ const Contact = () => {
     setSubmitStatus({ type: '', message: '' });
 
     try {
-      const response = await fetch('http://localhost:1337/api/contacts', {
+      const response = await fetch(`${API_URL}/api/contacts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +90,7 @@ const Contact = () => {
         message: ""
       });
 
-      // Show success message
+   
       setSubmitStatus({
         type: 'success',
         message: t('contact.form.success')
@@ -145,7 +147,7 @@ const Contact = () => {
         <meta name="description" content={t('contact.meta.description')} />
       </Helmet>
 
-      {/* Hero Banner with Background Image */}
+      {/* Hero Banner */}
       <div className="relative w-full bg-red-800 pt-24 md:pt-32 pb-12 md:pb-16 overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-50"></div>
         <img

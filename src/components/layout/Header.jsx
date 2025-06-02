@@ -45,6 +45,7 @@ const Header = () => {
     { to: '/gau-seva', label: t('navigation.gauseva') },
     { to: '/gotra-aankna', label: t('navigation.gotraankna') },
     { to: '/all-assembly', label: t('navigation.allassembly') },
+    // { to: '/community-funds', label: t('navigation.funds') },
   ];
 
   return (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
 import { FaCalendar, FaMapMarkerAlt, FaImages, FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa';
 

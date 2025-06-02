@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import { useTranslation } from 'react-i18next';
 import { Link } from "react-router-dom";
 import { CowSevaCollection } from "./index";
@@ -264,7 +264,7 @@ const CowSeva = () => {
         </div>
 
         {/* Donate Section */}
-        <div className="bg-gradient-to-br from-white to-orange-50 rounded-lg shadow-lg p-8 md:p-10 mb-6 md:mb-10 text-center border-l-4 border-[#FD7D01] relative overflow-hidden">
+        <div className="bg-gradient-to-r from-red-800 to-red-900 rounded-2xl p-8 text-center text-white relative overflow-hidden mb-12">
           <img
             src="/decorative-pattern.png"
             alt=""
@@ -273,20 +273,24 @@ const CowSeva = () => {
           />
           <div className="relative z-10">
             <h2
-              className={`text-2xl md:text-3xl lg:text-4xl font-bold text-[#FD7D01] mb-4 md:mb-6 ${languageFontClass}`}
+              className={`text-3xl font-bold mb-4 ${languageFontClass}`}
             >
               {i18n.language === "hi"
                 ? "आज ही गौ दान करें"
                 : "Donate for Cows Today"}
             </h2>
             <p
-              className={`text-gray-700 mb-6 md:mb-8 max-w-2xl mx-auto text-lg md:text-xl ${languageFontClass}`}
+              className={`text-lg mb-6 max-w-2xl mx-auto ${languageFontClass}`}
             >
               {i18n.language === "hi"
                 ? "गौ माता की सेवा करना हमारा धार्मिक और सामाजिक कर्तव्य है। आज ही अपना योगदान देकर इस पुण्य कार्य में भागीदार बनें।"
                 : "Serving mother cow is our religious and social duty. Become a part of this virtuous cause by contributing today."}
             </p>
-            <DonateButton languageFontClass={languageFontClass} />
+            <Link to="/contact-us">
+              <button className="bg-white text-red-800 px-8 py-4 rounded-lg font-semibold hover:bg-red-50 transition-colors text-lg">
+                {t('cowSeva.donateButton')}
+              </button>
+            </Link>
           </div>
         </div>
       </div>

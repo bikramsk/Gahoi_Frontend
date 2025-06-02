@@ -27,7 +27,13 @@
     "socialFlagSong": "Social Flag Song",
     "rite": "Rite",
     "video": "Video",
-    "latestNews": "Latest News"
+    "latestNews": "Latest News",
+    "funds": "Community Fund",
+    "overview": "Overview",
+    "successStories": "Success Stories",
+    "ongoingSupport": "Ongoing Support",
+    "contributors": "Contributors",
+    "requests": "Fund Requests"
   },
   "errors": {
     "required": "This field is required",
@@ -801,6 +807,46 @@
       "title": "Video Gallery",
       "subtitle": "Visual Archive of Gahoi Vaishya Mahasabha Activities",
       "backgroundAlt": "Video Gallery Background"
+    }
+  },
+  "funds": {
+    "meta": {
+      "title": "Community Funds - Gahoi Samaj",
+      "description": "Support and track community contributions. Together we can make a difference in our society through regular contributions and transparent fund management."
+    },
+    "title": "Community Funds",
+    "subtitle": "Together we can make a difference",
+    "stats": {
+      "totalContributors": "Total Contributors",
+      "totalContributions": "Total Contributions",
+      "successRate": "Success Rate",
+      "studentsSupported": "Students Supported",
+      "totalSupport": "Total Support"
+    },
+    "regularContributors": {
+      "sectionTitle": "Regular Contributors",
+      "sectionDescription": "View our dedicated community members who contribute regularly to support community.",
+      "donationRecord": "Donation Record",
+      "search": "Search contributors...",
+      "export": "Export Data",
+      "contributorName": "Contributor Name",
+      "monthlyContribution": "Monthly Contribution",
+      "totalContribution": "Total Contribution",
+      "date": "Date",
+      "place": "Place",
+      "purpose": "Purpose",
+      "educationSupport": "Education Support",
+      "showing": "Showing",
+      "of": "of",
+      "total": "total entries"
+    },
+    "supportedStudentsTitle": "Supported Students",
+    "supportedStudentsDescription": "Meet our bright students who are achieving their dreams with community support",
+    "supportedBy": "Supported by",
+    "joinUs": {
+      "title": "Join Our Mission",
+      "description": "Be a part of our community's growth. Your regular contribution can help shape the future of deserving students.",
+      "button": "Contribute Now"
     }
   }
 } 

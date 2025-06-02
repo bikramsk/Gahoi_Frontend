@@ -49,6 +49,11 @@ const Footer = () => {
                 </Link>
               </li>
               <li className="w-1/2 mb-2">
+                <Link to="/community-funds" className={`${hindiTextClass} text-red-200 hover:text-yellow-100 transition-colors`}>
+                  {t('navigation.funds')}
+                </Link>
+              </li>
+              <li className="w-1/2 mb-2">
                 <Link to="/contact-us" className={`${hindiTextClass} text-red-100 hover:text-yellow-100 transition-colors`}>
                   {t('navigation.contact')}
                 </Link>

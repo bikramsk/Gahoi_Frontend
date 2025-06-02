@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 const AllAssembly = () => {
   const [activeTab, setActiveTab] = useState("2019");

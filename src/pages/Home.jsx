@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useState, useEffect } from "react";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 const API_URL =
   import.meta.env.VITE_PUBLIC_STRAPI_API_URL || "http://localhost:1337";
