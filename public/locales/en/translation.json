@@ -56,7 +56,7 @@
       "description": "Login to access Gahoi Samaj community features and services"
     },
     "backToHome": "Back to Home",
-    "welcomeMessage": "Welcome Back",
+    "welcomeMessage": "Welcome to Gahoi Jan Kalyan Samiti",
     "subtitle": "Login to your account",
     "mobileNumber": "Mobile Number",
     "enterOtp": "Enter OTP",
@@ -93,7 +93,7 @@
       "registration": "Registration",
       "completion": "Completion"
     },
-    "otpAuthTitle": "OTP Authentication",
+    "otpAuth": "OTP Authentication",
     "otpAuthDescription": "Please enter the OTP sent to your mobile number",
     "otpAuthResendMessage": "Didn't receive OTP?",
     "otpAuthResendButton": "Resend OTP",
@@ -109,7 +109,11 @@
     "termsLinks": {
       "terms": "Terms of Service",
       "privacy": "Privacy Policy"
-    }
+    },
+    "sending": "Sending...",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "slogan": "Empowering your community connection."
   },
   "latestNews": {
     "meta": {
@@ -216,6 +220,14 @@
         "title": "Buy Cow Products",
         "description": "Support our cause by purchasing pure and natural cow products. The proceeds help us maintain our Gaushala."
       }
+    },
+    "hero": {
+      "subtitle": "Serving Cows, Serving Humanity"
+    },
+    "donate": {
+      "title": "Donate for Cows Today",
+      "description": "Serving mother cow is our religious and social duty. Become a part of this virtuous cause by contributing today.",
+      "button": "Donate Now"
     }
   },
   "cowSevaCollection": {
@@ -360,6 +372,9 @@
       "title": "Contact Us - Gahoi Samaj",
       "description": "Contact Gahoi Samaj. We are ready to help you."
     },
+    "location": {
+      "title": "Our Location"
+    },
     "form": {
       "title": "Send us a Message",
       "name": {
@@ -394,17 +409,16 @@
       "success": "Message sent successfully!",
       "error": "Error sending message. Please try again."
     },
-    "contactInfo": {
-      "title": "Contact Information",
-      "contact1": {
+    "addresses": {
+      "primary": {
         "name": "Shri Pradeep Paharia",
         "address1": "12, Tarun Vihar Colony, Thatipur",
-        "address2": "Gwalior - 474011 (M.P.)"
+        "address2": "Gwalior – 474011 (Madhya Pradesh)"
       },
-      "contact2": {
+      "secondary": {
         "name": "Shri Sudhir Rawat",
         "address1": "12, Tarun Vihar Colony, Thatipur",
-        "address2": "Gwalior - 474011 (M.P.)"
+        "address2": "Gwalior – 474011 (Madhya Pradesh)"
       }
     }
   },
@@ -465,7 +479,35 @@
       "publicityMinister": "Publicity Minister",
       "propertyDevelopmentCoordinator": "Property Development Coordinator",
       "manager": "Manager",
-      "executiveChairman": "Executive Chairman"
+      "executiveChairman": "Executive Chairman",
+      "centralMinister": "Central Minister",
+      "jointMinister": "Joint Minister",
+      "developmentMinister": "Development Minister",
+      "organisationMinister": "Organisation Minister",
+      "assistantMinister": "Assistant Minister",
+      "treasurer": "Treasurer",
+      "auditor": "Auditor",
+      "executivePresident": "Executive President",
+      "chairmanTribunal": "Chairman Tribunal",
+      "ministerTribunal": "Minister Tribunal",
+      "chairmanAkshayNidhi": "Chairman Akshay Nidhi",
+      "chairmanGahoiGlobalCheCom": "Chairman Gahoi Global Che-Com",
+      "ministerGahoiGlobalCheCom": "Minister Gahoi Global Che-Com",
+      "chairmanShasEmployee": "Chairman Shas Employee",
+      "ministerShasEmployee": "Minister Shas Employee",
+      "chairmanPolitician": "Chairman Politician",
+      "ministerPolitician": "Minister Politician",
+      "gahoiWelfareFund": "Gahoi Welfare Fund",
+      "presidentAllIndiaGahoiVaishyaWomen": "President All India Gahoi Vaishya Women",
+      "ministerMinisterAllIndiaGahoiVaishyaWomen": "Minister All India Gahoi Vaishya Women",
+      "presidentAllIndiaGahoiVaishya": "President All India Gahoi Vaishya",
+      "ministerMinisterAllIndiaGahoiVaishyaYouthCouncil": "Minister All India Gahoi Vaishya Youth Council",
+      "presidentAllIndiaGahoiVaishyaSeniorAssociation": "President All India Gahoi Vaishya Senior Association",
+      "ministerMinisterAllIndiaGahoiVaishyaSeniorAssociation": "Minister All India Gahoi Vaishya Senior Association",
+      "chiefElectionCommissioner": "Chief Election Commissioner",
+      "coordinatorCensus": "Census Coordinator",
+      "managerRajabeti": "Manager Rajabeti",
+      "managerGahoiBhawanChitrakoot": "Manager Gahoi Bhawan Chitrakoot"
     },
     "contact": {
       "mobile": "Mobile:"

@@ -20,6 +20,24 @@ const Contact = () => {
 
   const API_URL = import.meta.env.VITE_PUBLIC_STRAPI_API_URL;
 
+ 
+  const contact1 = {
+    name: t('contact.addresses.primary.name'),
+    address1: t('contact.addresses.primary.address1'),
+    address2: t('contact.addresses.primary.address2'),
+    phone: "+91-9303872220",
+    email1: "gahoishakti@gmail.com",
+    email2: ""
+  };
+
+  const contact2 = {
+    name: t('contact.addresses.secondary.name'),
+    address1: t('contact.addresses.secondary.address1'),
+    address2: t('contact.addresses.secondary.address2'),
+    phone: "+91-9826260742",
+    email1: "gahoishakti@gmail.com"
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -103,23 +121,6 @@ const Contact = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const contact1 = {
-    name: { hi: "श्री प्रदीप पहरिया", en: "Shri Pradeep Paharia" },    
-    address1: { hi: "12, तरुण विहार कॉलोनी, थाटीपुर", en: "12, Tarun Vihar Colony, Thatipur" },
-    address2: { hi: " ग्वालियर - 474011 (म.प्र.)", en: "Gwalior – 474011 (Madhya Pradesh)" },
-    phone: "+91-9303872220",
-    email1: "gahoishakti@gmail.com",
-    email2: "",
-  };
-
-  const contact2 = {
-    name: { hi: "श्री सुधीर रावत", en: "Shri Sudhir Rawat" },
-    address1: { hi: "12, तरुण विहार कॉलोनी, थाटीपुर", en: "12, Tarun Vihar Colony, Thatipur" },
-    address2: { hi: " ग्वालियर - 474011 (म.प्र.)", en: "Gwalior – 474011 (Madhya Pradesh)" },  
-    phone: "+91-9826260742",
-    email1: "gahoishakti@gmail.com",
   };
 
   // reusable styles
@@ -221,18 +222,18 @@ const Contact = () => {
                   <span
                     className={`text-gray-800 font-medium ${languageFontClass}`}
                   >
-                    {contact1.name[i18n.language]}
+                    {contact1.name}
                   </span>
                 </li>
               
                 <li className="flex items-start">
                   <span className={`text-gray-700 ${languageFontClass}`}>
-                    {contact1.address1[i18n.language]}
+                    {contact1.address1}
                   </span>
                 </li>
                 <li className="flex items-start">
                   <span className={`text-gray-700 ${languageFontClass}`}>
-                    {contact1.address2[i18n.language]}
+                    {contact1.address2}
                   </span>
                 </li>
                 <li className="flex items-start">
@@ -339,17 +340,17 @@ const Contact = () => {
                   <span
                     className={`text-gray-800 font-medium ${languageFontClass}`}
                   >
-                    {contact2.name[i18n.language]}
+                    {contact2.name}
                   </span>
                 </li>
                 <li className="flex items-start">
                   <span className={`text-gray-700 ${languageFontClass}`}>
-                    {contact2.address1[i18n.language]}
+                    {contact2.address1}
                   </span>
                 </li>
                 <li className="flex items-start">
                   <span className={`text-gray-700 ${languageFontClass}`}>
-                    {contact2.address2[i18n.language]}
+                    {contact2.address2}
                   </span>
                 </li>
               
@@ -403,8 +404,8 @@ const Contact = () => {
             </div>
           </div>
 
-          {/* Contact Form Section */}
-          <div className={sectionStyles}>
+  {/* Contact Form Section */}
+  <div className={sectionStyles}>
             <SectionTitle
               translationKey="contact.form.title"
             />

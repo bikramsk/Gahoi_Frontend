@@ -49,16 +49,16 @@ const LOCAL_PANCHAYATS = {
 };
 
 const SUB_LOCAL_PANCHAYATS = {
-  Pune: ["Pune City", "Pimpri-Chinchwad", "Khadki", "Hadapsar"],
+  Pune: ["Pune", "Pimpri-Chinchwad", "Khadki", "Hadapsar"],
   Mumbai: ["South Mumbai", "Andheri", "Borivali", "Thane", "Navi Mumbai"],
-  Nagpur: ["Nagpur City", "Kamptee", "Hingna"],
-  Amravati: ["Amravati City", "Badnera", "Achalpur"],
+  Nagpur: ["Nagpur", "Kamptee", "Hingna"],
+  Amravati: ["Amravati", "Badnera", "Achalpur"],
   Chalisgaon: ["Chalisgaon"],
   Dhuliya: ["Dhuliya"],
-  Morena: ["Morena City", "Ambah", "Porsa"],
-  Bhind: ["Bhind City", "Ater", "Lahar"],
-  Gwalior: ["Gwalior City", "Dabra", "Bhitarwar"],
-  Patna: ["Patna City"],
+  Morena: ["Morena", "Ambah", "Porsa"],
+  Bhind: ["Bhind", "Ater", "Lahar"],
+  Gwalior: ["Gwalior", "Dabra", "Bhitarwar"],
+  Patna: ["Patna"],
   Durg: ["Durg"],
   Rajnandgaon: ["Rajnandgaon"],
   Dhamtari: ["Dhamtari"],
@@ -131,6 +131,7 @@ const RegistrationForm = () => {
   const [formData, setFormData] = useState({
     ...INITIAL_FORM_DATA,
     mobileNumber: location.state?.mobileNumber || "",
+    workCategory: "professional",
   });
   const [processSteps, setProcessSteps] = useState(PROCESS_STEPS);
   const [progress, setProgress] = useState(50);
@@ -1132,8 +1133,8 @@ const RegistrationForm = () => {
     setLoading(true);
     
     try {
+      // Only validate email existence on the first step
       if (currentStep === 0 && formData.email) {
-        // Check email existence before proceeding
         const emailExists = await checkEmailExists(formData.email);
         if (emailExists) {
           setErrors(prev => ({
@@ -1145,14 +1146,22 @@ const RegistrationForm = () => {
         }
       }
       
-      if (validateCurrentStep()) {
-        if (currentStep < formSteps.length - 1) {
-          setCurrentStep(currentStep + 1);
-          setSubmitted(false);
-          window.scrollTo(0, 0);
-        } else {
-          handleSubmit();
+      // If this is the final step, skip validation and submit directly
+      if (currentStep === formSteps.length - 1) {
+        if (!formData.confirmAccuracy) {
+          setSubmitted(true);
+          setLoading(false);
+          return;
         }
+        handleSubmit();
+        return;
+      }
+      
+      // For other steps, validate as normal
+      if (validateCurrentStep()) {
+        setCurrentStep(currentStep + 1);
+        setSubmitted(false);
+        window.scrollTo(0, 0);
       } else {
         // Scroll to first error
         const firstErrorField = document.querySelector(".error-field");
@@ -1161,6 +1170,7 @@ const RegistrationForm = () => {
         }
       }
     } catch (error) {
+      console.error("Error in handleNext:", error);
       setErrors(prev => ({
         ...prev,
         email: "Unable to verify email. Please try again."
@@ -2554,264 +2564,6 @@ const RegistrationForm = () => {
           </div>
         );
 
-      // case 3:
-      //   return (
-      //     <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md border border-gray-200">
-      //       <div className="flex items-center mb-4 sm:mb-6 pb-2 sm:pb-3 border-b border-gray-100">
-      //         <svg
-      //           xmlns="http://www.w3.org/2000/svg"
-      //           className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 text-red-700"
-      //           viewBox="0 0 20 20"
-      //           fill="currentColor"
-      //         >
-      //           <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-      //         </svg>
-      //         <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
-      //           Biographical Details
-      //         </h2>
-      //       </div>
-
-      //       {/* Married Status */}
-      //       {/* <div className="mb-6 sm:mb-8 bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
-      //         <h3 className="text-sm sm:text-md font-medium text-gray-700 mb-2 sm:mb-3 flex items-center">
-      //           <svg
-      //             xmlns="http://www.w3.org/2000/svg"
-      //             className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 text-red-600"
-      //             viewBox="0 0 20 20"
-      //             fill="currentColor"
-      //           >
-      //             <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
-      //           </svg>
-      //           Marital Status
-      //         </h3>
-      //         <div className="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-8 space-y-2 sm:space-y-0 px-3 sm:px-4 py-2 sm:py-3 bg-white rounded-lg shadow-sm">
-      //           <label className="inline-flex items-center">
-      //             <input
-      //               type="radio"
-      //               name="isMarried"
-      //               value="yes"
-      //               checked={formData.isMarried === true}
-      //               onChange={(e) =>
-      //                 setFormData((prev) => ({
-      //                   ...prev,
-      //                   isMarried: e.target.value === "yes",
-      //                   // Reset marriage to another caste if not married
-      //                   marriageToAnotherCaste:
-      //                     e.target.value !== "yes"
-      //                       ? false
-      //                       : prev.marriageToAnotherCaste,
-      //                 }))
-      //               }
-      //               className="h-4 w-4 text-red-700 focus:ring-red-500"
-      //             />
-      //             <span className="ml-2 text-sm text-gray-700">Married</span>
-      //           </label>
-      //           <label className="inline-flex items-center">
-      //             <input
-      //               type="radio"
-      //               name="isMarried"
-      //               value="no"
-      //               checked={formData.isMarried === false}
-      //               onChange={(e) =>
-      //                 setFormData((prev) => ({
-      //                   ...prev,
-      //                   isMarried: e.target.value === "yes",
-      //                   // Reset marriage to another caste if not married
-      //                   marriageToAnotherCaste: false,
-      //                 }))
-      //               }
-      //               className="h-4 w-4 text-red-700 focus:ring-red-500"
-      //             />
-      //             <span className="ml-2 text-sm text-gray-700">Unmarried</span>
-      //           </label>
-      //         </div>
-      //       </div> */}
-
-      //       {/* Marriage to Another Caste - Only show if married */}
-            
-      //         <div className="mb-6 sm:mb-8 bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
-      //           <h3 className="text-sm sm:text-md font-medium text-gray-700 mb-2 sm:mb-3 flex items-center">
-      //             <svg
-      //               xmlns="http://www.w3.org/2000/svg"
-      //               className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 text-red-600"
-      //               viewBox="0 0 20 20"
-      //               fill="currentColor"
-      //             >
-      //               <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
-      //             </svg>
-      //             Marriage Type
-      //           </h3>
-      //           <div className="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-8 space-y-2 sm:space-y-0 px-3 sm:px-4 py-2 sm:py-3 bg-white rounded-lg shadow-sm">
-      //             <label className="inline-flex items-center">
-      //               <input
-      //                 type="radio"
-      //                 name="marriageToAnotherCaste"
-      //                 value="yes"
-      //                 checked={formData.marriageToAnotherCaste === true}
-      //                 onChange={(e) =>
-      //                   setFormData((prev) => ({
-      //                     ...prev,
-      //                     marriageToAnotherCaste: e.target.value === "yes",
-      //                     gotra: e.target.value === "yes" ? "" : prev.gotra,
-      //                     aakna: e.target.value === "yes" ? "" : prev.aakna,
-      //                   }))
-      //                 }
-      //                 className="h-4 w-4 text-red-700 focus:ring-red-500"
-      //               />
-      //               <span className="ml-2 text-sm text-gray-700">
-      //                 Married to Another Caste
-      //               </span>
-      //             </label>
-      //             <label className="inline-flex items-center">
-      //               <input
-      //                 type="radio"
-      //                 name="marriageToAnotherCaste"
-      //                 value="no"
-      //                 checked={formData.marriageToAnotherCaste === false}
-      //                 onChange={(e) =>
-      //                   setFormData((prev) => ({
-      //                     ...prev,
-      //                     marriageToAnotherCaste: e.target.value === "yes",
-      //                   }))
-      //                 }
-      //                 className="h-4 w-4 text-red-700 focus:ring-red-500"
-      //               />
-      //               <span className="ml-2 text-sm text-gray-700">
-      //                 Same Caste Marriage
-      //               </span>
-      //             </label>
-      //           </div>
-      //         </div>
-            
-
-      //       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-      //         {/* Show Gotra fields only if marriageToAnotherCaste is false */}
-           
-      //           <>
-      //             {/* Gotra */}
-      //             <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200 transition-all hover:shadow-md md:col-span-1 lg:col-span-1">
-      //               <label className=" text-sm font-medium text-gray-700 mb-2 sm:mb-3 flex items-center">
-      //                 <svg
-      //                   xmlns="http://www.w3.org/2000/svg"
-      //                   className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 text-red-600"
-      //                   viewBox="0 0 20 20"
-      //                   fill="currentColor"
-      //                 >
-      //                   <path
-      //                     fillRule="evenodd"
-      //                     d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16h2a1 1 0 110 2H7a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L9 4.323V3a1 1 0 011-1z"
-      //                     clipRule="evenodd"
-      //                   />
-      //                 </svg>
-      //                 Gotra
-      //               </label>
-      //               <select
-      //                 name="gotra"
-      //                 value={formData.gotra}
-      //                 onChange={handleInputChange}
-      //                 className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 ${
-      //                   hasError("gotra")
-      //                     ? "border-red-500 bg-red-50"
-      //                     : "border-gray-300"
-      //                 }`}
-      //               >
-      //                 <option value="">Select Gotra</option>
-      //                 {[
-      //                   "Vasar/Vastil/Vasal",
-      //                   "Gol",
-      //                   "Gangal / Gagil",
-      //                   "Badal / Waghil / Bandal",
-      //                   "Kocchal / Kochil",
-      //                   "Jaital",
-      //                   "Vachhil",
-      //                   "Kachhil",
-      //                   "Bhaal",
-      //                   "Kohil",
-      //                   "Kasiv",
-      //                   "Kasav",
-      //                   "Single",
-      //                 ].map((option) => (
-      //                   <option key={option} value={option}>
-      //                     {option}
-      //                   </option>
-      //                 ))}
-      //               </select>
-      //               {hasError("gotra") && (
-      //                 <p className="text-red-500 text-xs mt-2 ml-1">
-      //                   {errors.gotra}
-      //                 </p>
-      //               )}
-      //             </div>
-
-      //             {/* Aakna */}
-      //             <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200 transition-all hover:shadow-md md:col-span-1 lg:col-span-2">
-      //               <label className=" text-sm font-medium text-gray-700 mb-2 sm:mb-3 flex items-center">
-      //                 <svg
-      //                   xmlns="http://www.w3.org/2000/svg"
-      //                   className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 text-red-600"
-      //                   viewBox="0 0 20 20"
-      //                   fill="currentColor"
-      //                 >
-      //                   <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
-      //                 </svg>
-      //                 Aakna
-      //               </label>
-      //               <select
-      //                 name="aakna"
-      //                 value={formData.aakna}
-      //                 onChange={handleInputChange}
-      //                 className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 ${
-      //                   hasError("aakna")
-      //                     ? "border-red-500 bg-red-50"
-      //                     : "border-gray-300"
-      //                 }`}
-      //                 disabled={!formData.gotra}
-      //               >
-      //                 <option value="">Select Aakna</option>
-      //                 {getAaknaOptions().map((option) => (
-      //                   <option key={option} value={option}>
-      //                     {option}
-      //                   </option>
-      //                 ))}
-      //               </select>
-      //               {hasError("aakna") && (
-      //                 <p className="text-red-500 text-xs mt-2 ml-1">
-      //                   {errors.aakna}
-      //                 </p>
-      //               )}
-      //               {!formData.gotra && (
-      //                 <p className="text-gray-500 text-xs mt-2 ml-1 italic">
-      //                   Select a Gotra first to see available Aakna options
-      //                 </p>
-      //               )}
-      //             </div>
-      //           </>
-            
-      //       </div>
-
-      //       <div className="mt-5 sm:mt-6 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
-      //         <div className="flex items-start sm:items-center text-gray-700">
-      //           <svg
-      //             xmlns="http://www.w3.org/2000/svg"
-      //             className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 text-blue-600 flex-shrink-0 mt-0.5 sm:mt-0"
-      //             viewBox="0 0 20 20"
-      //             fill="currentColor"
-      //           >
-      //             <path
-      //               fillRule="evenodd"
-      //               d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-      //               clipRule="evenodd"
-      //             />
-      //           </svg>
-      //           <p className="text-xs sm:text-sm text-gray-600">
-      //             These details are important for community records and can be
-      //             useful for various purposes.
-      //           </p>
-      //         </div>
-      //       </div>
-      //     </div>
-      //   );
-
       case 3:
         return (
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
@@ -3019,7 +2771,7 @@ const RegistrationForm = () => {
               </div>
               )}
 
-              <div className="space-y-3">
+              {/* <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700">
                   Work Type
                 </label>
@@ -3046,10 +2798,10 @@ const RegistrationForm = () => {
                 {hasError("workType") && (
                   <p className="text-red-500 text-xs">Please select work type</p>
                 )}
-              </div>
+              </div> */}
 
               {/* Business Owner Specific Fields */}
-              {formData.workType === "Business Owner" && (
+              {/* {formData.workType === "Business Owner" && (
                 <>
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700">
@@ -3131,83 +2883,90 @@ const RegistrationForm = () => {
                     )}
                   </div>
                 </>
+              )} */}
+
+              {/* Show these fields only if Professional/Employee is selected */}
+              {formData.workCategory === "professional" && (
+                <>
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Occupation/Job Title
+                    </label>
+                    <input
+                      type="text"
+                      name="occupation"
+                      value={formData.occupation}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 ${
+                        hasError("occupation")
+                          ? "border-red-500 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                      placeholder="Enter your specific role or job title"
+                    />
+                    {hasError("occupation") && (
+                      <p className="text-red-500 text-xs">
+                        Please enter your occupation
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Company/Organization Name
+                    </label>
+                    <input
+                      type="text"
+                      name="companyName"
+                      value={formData.companyName}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 ${
+                        hasError("companyName")
+                          ? "border-red-500 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                      placeholder="Enter your company or organization name"
+                    />
+                    {hasError("companyName") && (
+                      <p className="text-red-500 text-xs">
+                        Please enter your company name
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Work Location/Area
+                    </label>
+                    <input
+                      type="text"
+                      name="workArea"
+                      value={formData.workArea}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 ${
+                        hasError("workArea")
+                          ? "border-red-500 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                      placeholder="Enter your work location or area"
+                    />
+                    {hasError("workArea") && (
+                      <p className="text-red-500 text-xs">
+                        Please enter your work location
+                      </p>
+                    )}
+                  </div>
+                </>
               )}
 
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700">
-                  Occupation/Job Title
-                </label>
-                <input
-                  type="text"
-                  name="occupation"
-                  value={formData.occupation}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 ${
-                    hasError("occupation")
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                  placeholder="Enter your specific role or job title"
-                />
-                {hasError("occupation") && (
-                  <p className="text-red-500 text-xs">
-                    Please enter your occupation
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700">
-                  Company/Organization Name
-                </label>
-                <input
-                  type="text"
-                  name="companyName"
-                  value={formData.companyName}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 ${
-                    hasError("companyName")
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                  placeholder="Enter your company or organization name"
-                />
-                {hasError("companyName") && (
-                  <p className="text-red-500 text-xs">
-                    Please enter your company name
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700">
-                  Work Location/Area
-                </label>
-                <input
-                  type="text"
-                  name="workArea"
-                  value={formData.workArea}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 ${
-                    hasError("workArea")
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                  placeholder="Enter your work location or area"
-                />
-                {hasError("workArea") && (
-                  <p className="text-red-500 text-xs">
-                    Please enter your work location
-                  </p>
-                )}
-              </div>
+             
             </div>
 
             <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="flex items-start sm:items-center text-gray-700">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 text-blue-600 flex-shrink-0 mt-0.5"
+                  className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 text-blue-600 flex-shrink-0 mt-0.5 sm:mt-0"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >
@@ -3218,9 +2977,8 @@ const RegistrationForm = () => {
                   />
                 </svg>
                 <p className="text-xs sm:text-sm text-gray-600">
-                  Your work information helps us better understand our
-                  community's professional landscape and enables us to
-                  facilitate networking and mutual support among members.
+                  These details are important for community records and can be
+                  useful for various purposes.
                 </p>
               </div>
             </div>

@@ -195,9 +195,7 @@ const CowSeva = () => {
             <p
               className={`text-xl md:text-2xl text-white opacity-90 max-w-3xl mx-auto ${languageFontClass}`}
             >
-              {i18n.language === "hi"
-                ? "गौ माता की सेवा, मानवता की सेवा"
-                : "Serving Cows, Serving Humanity"}
+              {t('cowSeva.hero.subtitle')}
             </p>
           </div>
         </div>
@@ -275,20 +273,16 @@ const CowSeva = () => {
             <h2
               className={`text-3xl font-bold mb-4 ${languageFontClass}`}
             >
-              {i18n.language === "hi"
-                ? "आज ही गौ दान करें"
-                : "Donate for Cows Today"}
+              {t('cowSeva.donate.title')}
             </h2>
             <p
               className={`text-lg mb-6 max-w-2xl mx-auto ${languageFontClass}`}
             >
-              {i18n.language === "hi"
-                ? "गौ माता की सेवा करना हमारा धार्मिक और सामाजिक कर्तव्य है। आज ही अपना योगदान देकर इस पुण्य कार्य में भागीदार बनें।"
-                : "Serving mother cow is our religious and social duty. Become a part of this virtuous cause by contributing today."}
+              {t('cowSeva.donate.description')}
             </p>
             <Link to="/contact-us">
               <button className="bg-white text-red-800 px-8 py-4 rounded-lg font-semibold hover:bg-red-50 transition-colors text-lg">
-                {t('cowSeva.donateButton')}
+                {t('cowSeva.donate.button')}
               </button>
             </Link>
           </div>

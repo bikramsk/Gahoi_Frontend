@@ -250,7 +250,7 @@ const CowSevaCollection = () => {
               <IndianRupee className="text-orange-500" size={20} />
             </div>
             <p className="text-2xl sm:text-3xl font-bold text-orange-600">
-              ₹{totalDonations.toLocaleString()}
+              Rs.{totalDonations.toLocaleString()}
             </p>
             <p className="text-xs sm:text-sm text-gray-500 mt-2">
               {t('cowSevaCollection.summaryCards.totalDonations.period')}
@@ -265,7 +265,7 @@ const CowSevaCollection = () => {
               <Calendar className="text-orange-500" size={20} />
             </div>
             <p className="text-2xl sm:text-3xl font-bold text-orange-600">
-              ₹{totalYearlyExpenses.toLocaleString()}
+              Rs.{totalYearlyExpenses.toLocaleString()}
             </p>
             <p className="text-xs sm:text-sm text-gray-500 mt-2">
               {t('cowSevaCollection.summaryCards.totalExpenses.period')}
@@ -420,20 +420,20 @@ const CowSevaCollection = () => {
                         {expense.Month}
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-gray-500 text-xs sm:text-sm">
-                        ₹{expense.feed.toLocaleString()}
+                      Rs.{expense.feed.toLocaleString()}
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-gray-500 text-xs sm:text-sm">
-                        ₹{expense.medical.toLocaleString()}
+                      Rs.{expense.medical.toLocaleString()}
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-gray-500 text-xs sm:text-sm">
-                        ₹{expense.maintenance.toLocaleString()}
+                        Rs.{expense.maintenance.toLocaleString()}
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-gray-500 text-xs sm:text-sm">
-                        ₹{expense.staff.toLocaleString()}
+                      Rs.{expense.staff.toLocaleString()}
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                         <div className="font-bold text-gray-900">
-                          ₹{expense.total.toLocaleString()}
+                        Rs.{expense.total.toLocaleString()}
                         </div>
                       </td>
                     </tr>
@@ -552,7 +552,7 @@ const CowSevaCollection = () => {
                         {donation.Name}
                       </div>
                       <div className="text-gray-900 font-bold text-sm">
-                        ₹{donation.Amount.toLocaleString()}
+                        Rs.{donation.Amount.toLocaleString()}
                       </div>
                     </div>
                     <div className="flex justify-between text-xs text-gray-500 mb-2">
@@ -602,7 +602,7 @@ const CowSevaCollection = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-gray-900">
-                            ₹{donation.Amount.toLocaleString()}
+                            Rs.{donation.Amount.toLocaleString()}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-gray-500">

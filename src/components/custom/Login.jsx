@@ -315,8 +315,8 @@ const Login = () => {
             <div className="p-2 sm:p-4 rounded-xl inline-block">
               <img src={pageData.logoUrl} alt={t('login.logoAlt')} className="w-32 sm:w-40 md:w-48 h-auto drop-shadow-lg" loading="lazy" />
             </div>
-            <h2 className="text-white text-base sm:text-xl font-semibold text-center mt-2 sm:mt-1">{pageData.welcomeMessage}</h2>
-            <p className="text-white/80 text-center mt-1 sm:mt-2 text-xs">{pageData.slogan}</p>
+            <h2 className="text-white text-base sm:text-xl font-semibold text-center mt-2 sm:mt-1">{t('login.welcomeMessage')}</h2>
+            <p className="text-white/80 text-center mt-1 sm:mt-2 text-xs">{t('login.slogan')}</p>
           </div>
         </div>
         
@@ -496,9 +496,16 @@ const Login = () => {
               </form>
             </div>
             
-            <div className="text-center mt-3 sm:mt-4 text-[10px] sm:text-xs text-gray-600">
-              By logging in, you agree to our <a href="/" className="text-red-700">Terms of Service</a> and <a href="/privacy-policy" className="text-red-700">Privacy Policy</a>.
-            </div>
+            <div
+              className="text-center mt-3 sm:mt-4 text-[10px] sm:text-xs text-gray-600"
+              dangerouslySetInnerHTML={{
+                __html: t('login.termsAgreement')
+                  .replace('Terms of Service', `<a href="/" class="text-red-700">${t('login.termsOfService')}</a>`)
+                  .replace('Privacy Policy', `<a href="/privacy-policy" class="text-red-700">${t('login.privacyPolicy')}</a>`)
+                  .replace('सेवा की शर्तों', `<a href="/" class="text-red-700">${t('login.termsOfService')}</a>`)
+                  .replace('गोपनीयता नीति', `<a href="/privacy-policy" class="text-red-700">${t('login.privacyPolicy')}</a>`)
+              }}
+            />
           </div>
         </div>
       </div>

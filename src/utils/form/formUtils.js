@@ -560,35 +560,35 @@ export const formatFormData = (data, displayPictureId = null) => {
 
   return {
     family_details: {
-      father_name: data.familyDetails[0]?.name ?? "",
-      father_mobile: data.familyDetails[0]?.mobileNumber ?? "",
-      mother_name: data.familyDetails[1]?.name ?? "",
-      mother_mobile: data.familyDetails[1]?.mobileNumber ?? "",
-      spouse_name: data.familyDetails[2]?.name ?? "",
-      spouse_mobile: data.familyDetails[2]?.mobileNumber ?? "",
+      father_name: data.familyDetails?.[0]?.name ?? "",
+      father_mobile: data.familyDetails?.[0]?.mobileNumber ?? "",
+      mother_name: data.familyDetails?.[1]?.name ?? "",
+      mother_mobile: data.familyDetails?.[1]?.mobileNumber ?? "",
+      spouse_name: data.familyDetails?.[2]?.name ?? "",
+      spouse_mobile: data.familyDetails?.[2]?.mobileNumber ?? "",
       gotra: data.marriageToAnotherCaste ? "Others" : (data.gotra ?? ""),
       aakna: data.marriageToAnotherCaste ? "Others" : (data.aakna ?? ""),
-      siblingDetails: data.familyDetails
-        .filter(member => member.relation === "Sibling")
+      siblingDetails: (data.familyDetails || [])
+        .filter(member => member?.relation === "Sibling")
         .map((sibling) => ({
-          sibling_name: sibling.name ?? "",
-          gender: sibling.gender || null,
-          phone_number: sibling.mobileNumber ?? "",
-          age: sibling.age ? parseInt(sibling.age, 10) : null,
-          education: sibling.education || null,
-          occupation: sibling.occupation || null,
-          marital_status: sibling.maritalStatus || null,
-          is_dependent: sibling.isDependent ?? false,
-          sibling_relation: sibling.siblingRelation || null
-        }))
+          sibling_name: sibling?.name ?? "",
+          gender: sibling?.gender || null,
+          phone_number: sibling?.mobileNumber ?? "",
+          age: sibling?.age ? parseInt(sibling.age, 10) : null,
+          education: sibling?.education || null,
+          occupation: sibling?.occupation || null,
+          marital_status: sibling?.maritalStatus || null,
+          is_dependent: sibling?.isDependent ?? false,
+          sibling_relation: sibling?.siblingRelation || null
+        })) || []
     },
-    child_name: data.familyDetails
-      .filter(member => member.relation === "Child")
+    child_name: (data.familyDetails || [])
+      .filter(member => member?.relation === "Child")
       .map((child) => ({ 
-        child_name: child.name ?? "",
-        gender: child.gender || null,
-        phone_number: child.mobileNumber ?? ""
-      })),
+        child_name: child?.name ?? "",
+        gender: child?.gender || null,
+        phone_number: child?.mobileNumber ?? ""
+      })) || [],
     biographical_details: {
       manglik_status: data.manglik ?? "",
       Grah: data.grah ?? "",
