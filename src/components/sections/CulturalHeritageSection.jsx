@@ -30,6 +30,7 @@ const CulturalHeritageSection = () => {
       description: t('home.heritage.items.achievements.description')
     }
   ];
+  
 
   return (
     <section className="py-16 bg-gradient-to-b from-orange-50 to-white">

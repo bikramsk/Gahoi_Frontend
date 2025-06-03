@@ -18,6 +18,8 @@ import LatestNews from "./components/custom/LatestNews";
 import NotFound from "./components/NotFound";
 import CommunityFunds from "./components/custom/CommunityFunds";
 
+
+
 function App() {
   return (
     <HelmetProvider>

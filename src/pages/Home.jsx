@@ -114,6 +114,8 @@ const CulturalHeritageSection = lazyImport(
   "CulturalHeritageSection"
 );
 
+
+
 // Component wrapper for consistent error handling
 const SectionWrapper = ({ children, name }) => (
   <ErrorBoundary componentName={name}>
@@ -222,14 +224,17 @@ const Home = () => {
         <CulturalHeritageSection />
       </SectionWrapper>
 
-      {/* Latest News & Events */}
-      <SectionWrapper name="LatestNewsSection">
-        <LatestNewsSection newsData={newsData} />
-      </SectionWrapper>
+
+
 
       {/* Cow Seva Initiatives */}
       <SectionWrapper name="CowSevaSection">
         <CowSevaSection />
+      </SectionWrapper>
+
+       {/* Latest News & Events */}
+      <SectionWrapper name="LatestNewsSection">
+        <LatestNewsSection newsData={newsData} />
       </SectionWrapper>
 
       {/* Success Stories */}

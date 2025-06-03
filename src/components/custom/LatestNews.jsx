@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
 import { FaCalendar, FaMapMarkerAlt, FaImages, FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa';
 
-const API_URL = import.meta.env.VITE_PUBLIC_STRAPI_API_URL;
+const API_URL = import.meta.env.VITE_PUBLIC_STRAPI_API_URL || "http://localhost:1337";
 
 const LatestNews = () => {
   const { t, i18n } = useTranslation();
@@ -63,11 +63,11 @@ const LatestNews = () => {
             id: item.id,
             title: {
               hi: hiTitle,
-              en: enTitle || hiTitle // fallback to hindi if eng not available
+              en: enTitle || hiTitle 
             },
             description: {
               hi: hiDesc,
-              en: enDesc || hiDesc // fallback to hindi if eng not available
+              en: enDesc || hiDesc 
             },
             date: item.Date ? new Date(item.Date) : new Date(0),
             formattedDate: item.Date ? new Date(item.Date).toLocaleDateString() : '',

@@ -10,7 +10,7 @@ const AboutSection = () => {
   
   return (
     <div className="py-16 bg-gradient-to-b from-white to-red-50 relative overflow-hidden">
-      {/* Subtle background decorations */}
+     
       <div className="absolute top-0 right-0 w-64 h-64 bg-red-100/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-100/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
 
