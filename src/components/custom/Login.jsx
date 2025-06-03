@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { getLoginPageData } from "../../data/loader";
 
-const API_URL = import.meta.env.VITE_PUBLIC_STRAPI_API_URL || 'http://localhost:1337';
+const API_URL = import.meta.env.VITE_PUBLIC_STRAPI_API_URL;
 
 // Function to check if user exists in Strapi backend
 const checkUserExists = async (mobileNumber) => {
@@ -297,7 +297,7 @@ const Login = () => {
       {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 to-slate-800/70"></div>
       
-      {/* Back to Home Button */}
+      {/* Back to Home  */}
       <button 
         onClick={() => navigate('/')}
         className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-red-700 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-red-800 transition-colors duration-200 z-20 flex items-center text-xs sm:text-sm"
