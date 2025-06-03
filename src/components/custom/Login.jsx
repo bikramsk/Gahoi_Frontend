@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Helmet } from "react-helmet-async";
@@ -6,27 +6,12 @@ import { useTranslation } from "react-i18next";
 
 import { getLoginPageData } from "../../data/loader";
 
-const fetchLoginPageData = async () => {
-  try {
-    const response = await getLoginPageData();
-    
-    // Verify the response structure 
-    if (!response?.data) {
-      throw new Error('Invalid response structure from API');
-    }
-    
-    return response;
-
-  } catch (error) {
-    console.error('Error fetching login page data:', error);
-  }
-};
+const API_URL = import.meta.env.VITE_PUBLIC_STRAPI_API_URL || 'http://localhost:1337';
 
 // Function to check if user exists in Strapi backend
 const checkUserExists = async (mobileNumber) => {
   try {
-    const baseUrl = 'http://localhost:1337';
-    const url = `${baseUrl}/api/registration-pages?filters[personal_information][mobile_number][$eq]=${mobileNumber}`;
+    const url = `${API_URL}/api/registration-pages?filters[personal_information][mobile_number][$eq]=${mobileNumber}`;
 
     const response = await fetch(url, {
       method: 'GET',
@@ -49,16 +34,14 @@ const checkUserExists = async (mobileNumber) => {
   }
 };
 
-const response = await fetchLoginPageData();
-const baseUrl = 'http://localhost:1337';
-const logoUrl = response?.data?.[0]?.logo?.url;
-const fullLogoUrl = logoUrl ? `${baseUrl}${logoUrl}` : null;
-const welcomeMessage = response?.data?.[0]?.welcomeMessage;
-const slogan = response?.data?.[0]?.slogan;
-
 const Login = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [pageData, setPageData] = useState({
+    logoUrl: null,
+    welcomeMessage: '',
+    slogan: ''
+  });
   const [formData, setFormData] = useState({
     mobileNumber: '',
     otp: ''
@@ -78,6 +61,31 @@ const Login = () => {
     { name: t('login.steps.registration'), completed: false },
     { name: t('login.steps.completion'), completed: false }
   ]);
+
+  // Load page data
+  React.useEffect(() => {
+    const loadPageData = async () => {
+      try {
+        const response = await getLoginPageData();
+        if (response?.data?.[0]) {
+          const data = response.data[0];
+          const logoUrl = data.logo?.url ? 
+            (data.logo.url.startsWith('http') ? data.logo.url : `${API_URL}${data.logo.url}`) : 
+            null;
+          
+          setPageData({
+            logoUrl,
+            welcomeMessage: data.welcomeMessage || '',
+            slogan: data.slogan || ''
+          });
+        }
+      } catch (error) {
+        console.error('Error loading page data:', error);
+      }
+    };
+
+    loadPageData();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -305,10 +313,10 @@ const Login = () => {
         <div className="bg-red-800 text-white p-4 sm:p-6 flex flex-col items-center justify-center w-full md:w-1/3">
           <div className="w-full flex flex-col justify-center items-center h-full py-2 sm:py-4">
             <div className="p-2 sm:p-4 rounded-xl inline-block">
-              <img src={fullLogoUrl} alt={t('login.logoAlt')} className="w-32 sm:w-40 md:w-48 h-auto drop-shadow-lg" loading="lazy" />
+              <img src={pageData.logoUrl} alt={t('login.logoAlt')} className="w-32 sm:w-40 md:w-48 h-auto drop-shadow-lg" loading="lazy" />
             </div>
-            <h2 className="text-white text-base sm:text-xl font-semibold text-center mt-2 sm:mt-1">{welcomeMessage}</h2>
-            <p className="text-white/80 text-center mt-1 sm:mt-2 text-xs">{slogan}</p>
+            <h2 className="text-white text-base sm:text-xl font-semibold text-center mt-2 sm:mt-1">{pageData.welcomeMessage}</h2>
+            <p className="text-white/80 text-center mt-1 sm:mt-2 text-xs">{pageData.slogan}</p>
           </div>
         </div>
         
