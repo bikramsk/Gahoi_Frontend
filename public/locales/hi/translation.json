@@ -535,18 +535,37 @@
     "verifyOtp": "OTP सत्यापित करें",
     "resendOtp": "OTP पुनः भेजें",
     "waitMessage": "नया OTP अनुरोध करने से पहले कृपया {{seconds}} सेकंड प्रतीक्षा करें",
+    "enterMpin": "4 अंकों का MPIN दर्ज करें",
+    "setupMpin": "4 अंकों का MPIN सेट करें",
+    "confirmMpin": "MPIN की पुष्टि करें",
+    "loginWithMpin": "MPIN से लॉगिन करें",
+    "setMpin": "MPIN सेट करें",
+    "useWhatsAppOtp": "WhatsApp OTP का उपयोग करें",
+    "mpinPlaceholder": "अपना 4 अंकों का MPIN दर्ज करें",
+    "newMpinPlaceholder": "नया 4 अंकों का MPIN दर्ज करें",
+    "confirmMpinPlaceholder": "अपने MPIN की पुष्टि करें",
+    "continue": "जारी रखें",
+    "processing": "प्रक्रिया जारी है...",
     "errors": {
       "mobileRequired": "मोबाइल नंबर आवश्यक है",
       "mobileLength": "मोबाइल नंबर 10 अंकों का होना चाहिए",
       "invalidOtp": "अमान्य OTP",
       "otpRequired": "OTP आवश्यक है",
+      "otpLength": "OTP 6 अंकों का होना चाहिए",
+      "mpinRequired": "MPIN आवश्यक है",
+      "mpinLength": "MPIN 4 अंकों का होना चाहिए",
+      "confirmMpinRequired": "कृपया अपने MPIN की पुष्टि करें",
+      "mpinMismatch": "MPIN मेल नहीं खाता",
+      "invalidMpin": "अमान्य MPIN",
       "invalidMobile": "कृपया एक वैध मोबाइल नंबर दर्ज करें",
       "tooManyAttempts": "बहुत अधिक प्रयास। कृपया बाद में पुनः प्रयास करें",
-      "serverError": "सर्वर त्रुटि। कृपया पुनः प्रयास करें"
+      "serverError": "सर्वर त्रुटि। कृपया पुनः प्रयास करें",
+      "otpSendFailed": "OTP भेजने में विफल। कृपया पुनः प्रयास करें"
     },
     "success": {
       "otpSent": "OTP सफलतापूर्वक भेजा गया",
-      "verified": "मोबाइल नंबर सफलतापूर्वक सत्यापित किया गया"
+      "verified": "मोबाइल नंबर सफलतापूर्वक सत्यापित किया गया",
+      "mpinSet": "MPIN सफलतापूर्वक सेट किया गया"
     },
     "progress": {
       "step1": "मोबाइल दर्ज करें",
@@ -565,26 +584,15 @@
       "completion": "पूर्ण"
     },
     "otpAuth": "OTP प्रमाणीकरण",
-    "otpAuthDescription": "कृपया अपने मोबाइल नंबर पर भेजा गया OTP दर्ज करें",
+    "otpAuthDescription": "कृपया अपने WhatsApp पर भेजा गया OTP दर्ज करें",
     "otpAuthResendMessage": "OTP नहीं मिला?",
     "otpAuthResendButton": "OTP पुनः भेजें",
     "otpAuthValidating": "OTP सत्यापित किया जा रहा है...",
     "otpAuthEnterDigits": "6 अंकों का कोड दर्ज करें",
     "otpAuthRemainingTime": "{{seconds}} सेकंड में पुनः भेजने की सुविधा उपलब्ध होगी",
     "mobilePlaceholder": "अपना 10 अंकों का मोबाइल नंबर दर्ज करें",
-    "otpSentMessage": "आपके मोबाइल नंबर पर OTP भेज दिया गया है",
     "otpPlaceholder": "6 अंक का OTP दर्ज करें",
-    "welcomeTitle": "गहोई जन कल्याण समिति में आपका स्वागत है",
-    "communityConnect": "अपने समुदाय से जुड़ें",
-    "termsAgreement": "लॉगिन करके, आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत हैं",
-    "termsLinks": {
-      "terms": "सेवा की शर्तें",
-      "privacy": "गोपनीयता नीति"
-    },
-    "sending": "भेजा जा रहा है...",
-    "termsOfService": "सेवा की शर्तें",
-    "privacyPolicy": "गोपनीयता नीति",
-    "slogan": "अपने समुदाय से जुड़ाव को सशक्त बनाएं।"
+    "otpSentMessage": "आपके WhatsApp पर OTP भेज दिया गया है"
   },
   "latestNews": {
     "meta": {
@@ -671,9 +679,16 @@
       "title": "गहोई शक्ति जन कल्याण समिति",
       "description": "गहोई शक्ति जन कल्याण समिति, सभी के लिए एक परिष्कृत समाज बनाने के लिए धार्मिक अध्ययन और आध्यात्मिकता पर जोर देती है। हम एक शांतिपूर्ण और ज्ञानवान समाज के निर्माण में सर्वाधिक योगदान करने में विश्वास रखते हैं।",
       "moreInfo": "अधिक जानकारी के लिए",
-      "playStoreAlt": "Google Play पर उपलब्ध है",
-      "viewMoreApps": "ऐप्स के बारे में और जानने के लिए यहाँ क्लिक करें",
-      "appImageAlt": "गहोई समाज ऐप"
+      "getItOn": "यहाँ से प्राप्त करें",
+      "googlePlay": "गूगल प्ले",
+      "viewMoreApps": "ऐप के बारे में और जानने के लिए यहाँ क्लिक करें",
+      "appTitle": "गहोई शक्ति",
+      "appSubtitle": "जन कल्याण समिति",
+      "appDeveloper": "गहोई समाज इंडिया",
+      "appSize": "1.2 एमबी",
+      "appRating": "4+ के लिए रेटेड",
+      "installButton": "इंस्टॉल करें",
+      "aboutApp": "ऐप के बारे में"
     },
     "heritage": {
       "title": "हमारी सांस्कृतिक विरासत",

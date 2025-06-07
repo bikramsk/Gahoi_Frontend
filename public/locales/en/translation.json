@@ -64,18 +64,37 @@
     "verifyOtp": "Verify OTP",
     "resendOtp": "Resend OTP",
     "waitMessage": "Please wait {{seconds}} seconds before requesting new OTP",
+    "enterMpin": "Enter 4-digit MPIN",
+    "setupMpin": "Setup 4-digit MPIN",
+    "confirmMpin": "Confirm MPIN",
+    "loginWithMpin": "Login with MPIN",
+    "setMpin": "Set MPIN",
+    "useWhatsAppOtp": "Use WhatsApp OTP instead",
+    "mpinPlaceholder": "Enter your 4-digit MPIN",
+    "newMpinPlaceholder": "Enter new 4-digit MPIN",
+    "confirmMpinPlaceholder": "Confirm your MPIN",
+    "continue": "Continue",
+    "processing": "Processing...",
     "errors": {
       "mobileRequired": "Mobile number is required",
       "mobileLength": "Mobile number must be 10 digits",
       "invalidOtp": "Invalid OTP",
       "otpRequired": "OTP is required",
+      "otpLength": "OTP must be 6 digits",
+      "mpinRequired": "MPIN is required",
+      "mpinLength": "MPIN must be 4 digits",
+      "confirmMpinRequired": "Please confirm your MPIN",
+      "mpinMismatch": "MPIN does not match",
+      "invalidMpin": "Invalid MPIN",
       "invalidMobile": "Please enter a valid mobile number",
       "tooManyAttempts": "Too many attempts. Please try again later",
-      "serverError": "Server error. Please try again"
+      "serverError": "Server error. Please try again",
+      "otpSendFailed": "Failed to send OTP. Please try again"
     },
     "success": {
       "otpSent": "OTP sent successfully",
-      "verified": "Mobile number verified successfully"
+      "verified": "Mobile number verified successfully",
+      "mpinSet": "MPIN set successfully"
     },
     "progress": {
       "step1": "Enter Mobile",
@@ -94,15 +113,15 @@
       "completion": "Completion"
     },
     "otpAuth": "OTP Authentication",
-    "otpAuthDescription": "Please enter the OTP sent to your mobile number",
+    "otpAuthDescription": "Please enter the OTP sent to your WhatsApp",
     "otpAuthResendMessage": "Didn't receive OTP?",
     "otpAuthResendButton": "Resend OTP",
     "otpAuthValidating": "Validating OTP...",
     "otpAuthEnterDigits": "Enter 6 digits code",
     "otpAuthRemainingTime": "Resend available in {{seconds}} seconds",
     "mobilePlaceholder": "Enter your 10 digit mobile number",
-    "otpSentMessage": "OTP has been sent to your mobile number",
     "otpPlaceholder": "Enter 6 digit OTP",
+    "otpSentMessage": "OTP has been sent to your WhatsApp",
     "welcomeTitle": "Welcome to Gahoi Jan Kalyan Samiti",
     "communityConnect": "Connect with your community",
     "termsAgreement": "By logging in, you agree to our Terms of Service and Privacy Policy",
@@ -695,11 +714,18 @@
     "stayConnected": {
       "heading": "STAY CONNECTED WITH",
       "title": "Gahoi Shakti Jan Kalyan Samiti",
-      "description": "Gahoi Shakti Jan Kalyan Samiti, religious studies and spirituality for creating a refined society for everyone. We believe in contributing most towards building a peaceful and enlightened society.",
+      "description": "Gahoi Shakti Jan Kalyan Samiti emphasizes religious studies and spirituality for creating a refined society for everyone. We believe in contributing towards building a peaceful and enlightened society.",
       "moreInfo": "For More Information",
-      "playStoreAlt": "Get it on Google Play",
+      "getItOn": "GET IT ON",
+      "googlePlay": "Google Play",
       "viewMoreApps": "Click here to view more about Apps",
-      "appImageAlt": "Gahoi Samaj App"
+      "appTitle": "GAHOI SHAKTI",
+      "appSubtitle": "JAN KALYAN SAMITI",
+      "appDeveloper": "Gahoi Samaj India",
+      "appSize": "1.2 MB",
+      "appRating": "Rated 4+",
+      "installButton": "Install",
+      "aboutApp": "About this app"
     }
   },
   "privacyPolicy": {
