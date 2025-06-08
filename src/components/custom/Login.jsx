@@ -70,7 +70,7 @@ const sendWhatsAppOTP = async (mobileNumber) => {
       try {
         const errorData = JSON.parse(responseText);
         errorMessage = errorData.message || errorData.error?.message || errorMessage;
-      } catch (e) {
+      } catch {
         errorMessage = responseText || errorMessage;
       }
       throw new Error(errorMessage);
@@ -79,7 +79,7 @@ const sendWhatsAppOTP = async (mobileNumber) => {
     let result;
     try {
       result = JSON.parse(responseText);
-    } catch (e) {
+    } catch {
       // If response is not JSON, assume success if status is OK
       result = { success: true, message: 'OTP sent successfully' };
     }
@@ -116,7 +116,7 @@ const verifyOTP = async (mobileNumber, otp) => {
       try {
         const errorData = JSON.parse(responseText);
         errorMessage = errorData.message || errorData.error?.message || errorMessage;
-      } catch (e) {
+      } catch {
         errorMessage = responseText || errorMessage;
       }
       throw new Error(errorMessage);
@@ -125,7 +125,7 @@ const verifyOTP = async (mobileNumber, otp) => {
     let result;
     try {
       result = JSON.parse(responseText);
-    } catch (e) {
+    } catch {
       throw new Error('Invalid response format');
     }
 
@@ -136,7 +136,7 @@ const verifyOTP = async (mobileNumber, otp) => {
   }
 };
 
-// MPIN verification function
+// Add MPIN verification function
 const verifyMPIN = async (mobileNumber, mpin) => {
   try {
     const response = await fetch(`${API_BASE}/api/verify-mpin`, {
@@ -154,14 +154,12 @@ const verifyMPIN = async (mobileNumber, mpin) => {
     });
 
     const responseText = await response.text();
-    console.log('Verify MPIN Response:', response.status, responseText);
-
     if (!response.ok) {
       let errorMessage = 'MPIN verification failed';
       try {
         const errorData = JSON.parse(responseText);
         errorMessage = errorData.message || errorData.error?.message || errorMessage;
-      } catch (e) {
+      } catch {
         errorMessage = responseText || errorMessage;
       }
       throw new Error(errorMessage);
@@ -170,6 +168,29 @@ const verifyMPIN = async (mobileNumber, mpin) => {
     return JSON.parse(responseText);
   } catch (error) {
     console.error('Error verifying MPIN:', error);
+    throw error;
+  }
+};
+
+// Check if user has MPIN
+const checkUserMPIN = async (mobileNumber) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/check-user-mpin/${mobileNumber}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${API_TOKEN}`
+      },
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to check user status');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error checking user MPIN:', error);
     throw error;
   }
 };
@@ -197,6 +218,7 @@ const Login = () => {
   const [recaptchaVerified, setRecaptchaVerified] = useState(false);
   const [userExists, setUserExists] = useState(false);
   const [userHasMPIN, setUserHasMPIN] = useState(false);
+  const [hasMpin, setHasMpin] = useState(false);
   const recaptchaRef = useRef(null);
   const [processSteps, setProcessSteps] = useState([
     { 
@@ -226,6 +248,11 @@ const Login = () => {
   ]);
   const [currentStep, setCurrentStep] = useState(1);
   const [countdown, setCountdown] = useState(0);
+  const [showMpinCreation, setShowMpinCreation] = useState(false);
+  const [mpinData, setMpinData] = useState({
+    mpin: '',
+    confirmMpin: ''
+  });
 
   React.useEffect(() => {
     const loadPageData = async () => {
@@ -273,6 +300,30 @@ const Login = () => {
           console.error('Error checking user:', error);
           // Default to OTP if check fails
           setAuthMode('otp');
+        }
+      }
+    };
+
+    if (formData.mobileNumber.length === 10) {
+      checkUser();
+    }
+  }, [formData.mobileNumber]);
+
+  // Check user MPIN status when mobile number is complete
+  useEffect(() => {
+    const checkUser = async () => {
+      if (formData.mobileNumber.length === 10) {
+        try {
+          const result = await checkUserMPIN(formData.mobileNumber);
+          setHasMpin(result.hasMpin);
+          if (result.hasMpin) {
+            setShowMpinInput(true);
+            setShowOtpInput(false);
+          }
+        } catch (error) {
+          console.error('Error checking user:', error);
+          setHasMpin(false);
+          setShowMpinInput(false);
         }
       }
     };
@@ -334,23 +385,37 @@ const Login = () => {
   };
 
   const handleMpinChange = (e) => {
-    const { value } = e.target;
+    const { name, value } = e.target;
     
     // Only allow 4 digit numbers
     if (!/^\d*$/.test(value) || value.length > 4) {
       return;
     }
     
+    setMpinData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const handleMpinInput = (e) => {
+    const { value } = e.target;
+    if (!/^\d*$/.test(value) || value.length > 4) {
+      return;
+    }
     setFormData(prev => ({
       ...prev,
       mpin: value
     }));
-    
     if (errors.mpin) {
-      setErrors(prev => ({
-        ...prev,
-        mpin: ''
-      }));
+      setErrors(prev => ({ ...prev, mpin: '' }));
     }
   };
 
@@ -363,22 +428,68 @@ const Login = () => {
       newErrors.mobileNumber = t('login.errors.mobileLength');
     }
 
-    if (authMode === 'otp') {
-      if (showOtpInput && !formData.otp) {
-        newErrors.otp = t('login.errors.otpRequired');
-      } else if (showOtpInput && formData.otp.length !== 4) {
-        newErrors.otp = t('login.errors.otpLength');
+    if (hasMpin && showMpinInput) {
+      if (!formData.mpin) {
+        newErrors.mpin = t('login.errors.mpinRequired');
+      } else if (formData.mpin.length !== 4) {
+        newErrors.mpin = t('login.errors.mpinLength');
       }
-    } else if (authMode === 'mpin') {
-      if (showMpinInput && !formData.mpin) {
-        newErrors.mpin = t('login.errors.mpinRequired') || 'MPIN is required';
-      } else if (showMpinInput && formData.mpin.length !== 4) {
-        newErrors.mpin = t('login.errors.mpinLength') || 'MPIN must be 4 digits';
+    } else if (showOtpInput) {
+      if (!formData.otp) {
+        newErrors.otp = t('login.errors.otpRequired');
+      } else if (formData.otp.length !== 4) {
+        newErrors.otp = t('login.errors.otpLength');
       }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const validateMpin = () => {
+    const newErrors = {};
+    
+    if (!mpinData.mpin) {
+      newErrors.mpin = t('login.errors.mpinRequired');
+    } else if (mpinData.mpin.length !== 4) {
+      newErrors.mpin = t('login.errors.mpinLength');
+    }
+
+    if (!mpinData.confirmMpin) {
+      newErrors.confirmMpin = t('login.errors.confirmMpinRequired');
+    } else if (mpinData.confirmMpin !== mpinData.mpin) {
+      newErrors.confirmMpin = t('login.errors.mpinMismatch');
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const createMpin = async (mpin) => {
+    try {
+      const response = await fetch(`${API_BASE}/api/create-mpin`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          mobileNumber: formData.mobileNumber,
+          mpin: mpin
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create MPIN');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating MPIN:', error);
+      throw error;
+    }
   };
 
   // Add countdown timer effect
@@ -392,136 +503,117 @@ const Login = () => {
     return () => clearInterval(timer);
   }, [countdown]);
 
-  // Updated handleSubmit function
+  // Modified handleSubmit to include MPIN creation
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitted(true);
     setErrors({});
     
-    if (validateForm()) {
-      if (authMode === 'otp' && !showOtpInput) {
-        // Sending OTP
-        if (!recaptchaVerified) {
-          setErrors({ mobileNumber: t('login.errors.recaptcha') });
-          return;
+    if (showMpinCreation) {
+      if (validateMpin()) {
+        setLoading(true);
+        try {
+          await createMpin(mpinData.mpin);
+          // After MPIN creation, navigate to dashboard
+          navigate('/registration');
+        } catch (error) {
+          setErrors({
+            mpin: error.message || 'Failed to create MPIN'
+          });
+        } finally {
+          setLoading(false);
         }
+      }
+      return;
+    }
+
+    if (!validateForm()) return;
+
+    if (hasMpin && showMpinInput) {
+      // MPIN Login
+      setLoading(true);
+      try {
+        const response = await verifyMPIN(formData.mobileNumber, formData.mpin);
+        if (response.jwt) {
+          localStorage.setItem('token', response.jwt);
+          localStorage.setItem('verifiedMobile', formData.mobileNumber);
+          navigate('/dashboard');
+        } else {
+          throw new Error('Invalid MPIN');
+        }
+      } catch (error) {
+        setErrors({
+          mpin: error.message || 'Invalid MPIN'
+        });
+        setFormData(prev => ({ ...prev, mpin: '' }));
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    if (!showOtpInput) {
+      // Sending OTP
+      if (!recaptchaVerified) {
+        setErrors({ mobileNumber: t('login.errors.recaptcha') });
+        return;
+      }
+      
+      setLoading(true);
+      try {
+        const result = await sendWhatsAppOTP(formData.mobileNumber);
         
-        setLoading(true);
-        try {
-          const result = await sendWhatsAppOTP(formData.mobileNumber);
-          console.log('Send OTP Result:', result);
+        if (result.success !== false && (result.success || result.data || result.message)) {
+          setShowOtpInput(true);
+          setOtpSent(true);
+          setCurrentStep(2);
+          setCountdown(60);
+          setErrors({});
           
-          if (result.success !== false && (result.success || result.data || result.message)) {
-            setShowOtpInput(true);
-            setOtpSent(true);
-            setCurrentStep(2);
-            setCountdown(60);
-            setErrors({});
-            
-            if (recaptchaRef.current) {
-              recaptchaRef.current.reset();
-              setRecaptchaVerified(false);
-            }
-          } else {
-            throw new Error(result.message || 'Failed to send OTP');
+          if (recaptchaRef.current) {
+            recaptchaRef.current.reset();
+            setRecaptchaVerified(false);
           }
-        } catch (error) {
-          console.error('Error sending OTP:', error);
-          setErrors({ 
-            mobileNumber: error.message || t('login.errors.otpSendFailed') || 'Failed to send OTP'
-          });
-        } finally {
-          setLoading(false);
+        } else {
+          throw new Error(result.message || 'Failed to send OTP');
         }
-      } else if (authMode === 'mpin' && !showMpinInput) {
-        // Show MPIN input
-        if (!recaptchaVerified) {
-          setErrors({ mobileNumber: t('login.errors.recaptcha') });
-          return;
-        }
-        setShowMpinInput(true);
-        setCurrentStep(2);
-      } else if (authMode === 'otp' && showOtpInput) {
-        // Verifying OTP
-        setLoading(true);
-        try {
-          const response = await verifyOTP(formData.mobileNumber, formData.otp);
-          console.log('OTP Verification Result:', response);
+      } catch (error) {
+        setErrors({ 
+          mobileNumber: error.message || t('login.errors.otpSendFailed')
+        });
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Verifying OTP
+      setLoading(true);
+      try {
+        const response = await verifyOTP(formData.mobileNumber, formData.otp);
+        
+        const token = response.jwt || response.token || response.data?.jwt || response.data?.token;
+        
+        if (token) {
+          localStorage.setItem('token', token);
+          localStorage.setItem('verifiedMobile', formData.mobileNumber);
           
-          const token = response.jwt || response.token || response.data?.jwt || response.data?.token;
-          
-          if (token) {
-            localStorage.setItem('token', token);
-            localStorage.setItem('verifiedMobile', formData.mobileNumber);
-            
-            const updatedSteps = [...processSteps];
-            updatedSteps[0].completed = true;
-            updatedSteps[1].completed = true;
-            setProcessSteps(updatedSteps);
+          if (!response.hasMpin) {
+            // Show MPIN creation form if user doesn't have MPIN
+            setShowMpinCreation(true);
             setCurrentStep(3);
-            
-            // Check if user is registered based on response
-            if (response.isRegistered) {
-              // User is already registered, go to dashboard
-              navigate('/dashboard');
-            } else {
-              // User needs to complete registration
-              navigate('/registration', { 
-                state: { 
-                  mobileNumber: formData.mobileNumber,
-                  fromLogin: true,
-                  processSteps: updatedSteps
-                } 
-              });
-            }
           } else {
-            throw new Error(response.message || 'Invalid OTP. Please try again.');
+            // User already has MPIN, go to dashboard
+            navigate('/dashboard');
           }
-        } catch (error) {
-          console.error('Error verifying OTP:', error);
-          setErrors({ 
-            otp: error.message || t('login.errors.invalidOtp') || 'Invalid OTP. Please try again.'
-          });
-          setFormData(prev => ({ ...prev, otp: '' }));
-        } finally {
-          setLoading(false);
+        } else {
+          throw new Error(response.message || 'Invalid OTP');
         }
-      } else if (authMode === 'mpin' && showMpinInput) {
-        // Verifying MPIN
-        setLoading(true);
-        try {
-          const response = await verifyMPIN(formData.mobileNumber, formData.mpin);
-          console.log('MPIN Verification Result:', response);
-          
-          const token = response.jwt || response.token;
-          
-          if (token) {
-            localStorage.setItem('token', token);
-            localStorage.setItem('verifiedMobile', formData.mobileNumber);
-            
-            // MPIN users are typically already registered
-            if (response.isRegistered) {
-              navigate('/dashboard');
-            } else {
-              navigate('/registration', { 
-                state: { 
-                  mobileNumber: formData.mobileNumber,
-                  fromLogin: true
-                } 
-              });
-            }
-          } else {
-            throw new Error(response.message || 'Invalid MPIN. Please try again.');
-          }
-        } catch (error) {
-          console.error('Error verifying MPIN:', error);
-          setErrors({ 
-            mpin: error.message || 'Invalid MPIN. Please try again.'
-          });
-          setFormData(prev => ({ ...prev, mpin: '' }));
-        } finally {
-          setLoading(false);
-        }
+      } catch (error) {
+        setErrors({ 
+          otp: error.message || t('login.errors.invalidOtp')
+        });
+        setFormData(prev => ({ ...prev, otp: '' }));
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -585,6 +677,14 @@ const Login = () => {
     }));
     setProcessSteps(updatedSteps);
   }, [currentStep]);
+
+  // Add switch to OTP option
+  const switchToOTP = () => {
+    setShowMpinInput(false);
+    setShowOtpInput(false);
+    setFormData(prev => ({ ...prev, mpin: '', otp: '' }));
+    setErrors({});
+  };
 
   return (
     <div 
@@ -723,8 +823,6 @@ const Login = () => {
                   </div>
                 )}
                 
-              
-                
                 {/* Mobile Number Input */}
                 <div className="space-y-1 sm:space-y-2">
                   <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center">
@@ -763,6 +861,44 @@ const Login = () => {
                         size="normal"
                       />
                     </div>
+                  </div>
+                )}
+
+                {/* MPIN Input for Existing Users */}
+                {hasMpin && showMpinInput && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-1.5 text-red-700" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                        </svg>
+                        {t('login.enterMpin')}
+                      </label>
+                      <button
+                        type="button"
+                        onClick={switchToOTP}
+                        className="text-xs text-red-700 hover:text-red-800 hover:underline"
+                      >
+                        {t('login.useWhatsAppOtp')}
+                      </button>
+                    </div>
+                    <input
+                      type="password"
+                      name="mpin"
+                      value={formData.mpin}
+                      onChange={handleMpinInput}
+                      className={`w-full px-2 sm:px-3 py-1.5 sm:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 text-sm text-center tracking-widest ${
+                        hasError('mpin') ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                      }`}
+                      pattern="[0-9]*"
+                      inputMode="numeric"
+                      maxLength={4}
+                      placeholder={t('login.mpinPlaceholder')}
+                      autoComplete="current-password"
+                    />
+                    {hasError('mpin') && (
+                      <p className="text-red-500 text-[10px] sm:text-xs">{errors.mpin}</p>
+                    )}
                   </div>
                 )}
 
@@ -817,13 +953,67 @@ const Login = () => {
                   </div>
                 )}
 
+                {/* MPIN Creation Form */}
+                {showMpinCreation && (
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-1.5 text-red-700" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                        </svg>
+                        {t('login.setupMpin')}
+                      </label>
+                      <input
+                        type="password"
+                        name="mpin"
+                        value={mpinData.mpin}
+                        onChange={handleMpinChange}
+                        className={`w-full px-2 sm:px-3 py-1.5 sm:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 text-sm text-center tracking-widest ${
+                          hasError('mpin') ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                        }`}
+                        pattern="[0-9]*"
+                        inputMode="numeric"
+                        maxLength={4}
+                        placeholder={t('login.newMpinPlaceholder')}
+                        autoComplete="new-password"
+                      />
+                      {hasError('mpin') && (
+                        <p className="text-red-500 text-[10px] sm:text-xs">{errors.mpin}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center">
+                        {t('login.confirmMpin')}
+                      </label>
+                      <input
+                        type="password"
+                        name="confirmMpin"
+                        value={mpinData.confirmMpin}
+                        onChange={handleMpinChange}
+                        className={`w-full px-2 sm:px-3 py-1.5 sm:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 text-sm text-center tracking-widest ${
+                          hasError('confirmMpin') ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                        }`}
+                        pattern="[0-9]*"
+                        inputMode="numeric"
+                        maxLength={4}
+                        placeholder={t('login.confirmMpinPlaceholder')}
+                        autoComplete="new-password"
+                      />
+                      {hasError('confirmMpin') && (
+                        <p className="text-red-500 text-[10px] sm:text-xs">{errors.confirmMpin}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Submit Button */}
                 <div className="flex items-center justify-between pt-1">
                   <button 
                     type="submit" 
-                    disabled={loading || (!showOtpInput && !recaptchaVerified)}
+                    disabled={loading || (!showOtpInput && !showMpinCreation && !recaptchaVerified)}
                     className={`w-full bg-red-700 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 font-medium text-xs sm:text-sm flex items-center justify-center ${
-                      loading || (!showOtpInput && !recaptchaVerified) ? 'opacity-75 cursor-not-allowed' : ''
+                      loading || (!showOtpInput && !showMpinCreation && !recaptchaVerified) ? 'opacity-75 cursor-not-allowed' : ''
                     }`}
                   >
                     {loading && (
@@ -833,9 +1023,13 @@ const Login = () => {
                       </svg>
                     )}
                     {loading ? (
-                      showOtpInput ? t('login.verifying') || 'Verifying...' : t('login.sending') || 'Sending...'
+                      showMpinCreation ? t('login.setting') || 'Setting MPIN...' :
+                      showOtpInput ? t('login.verifying') || 'Verifying...' : 
+                      t('login.sending') || 'Sending...'
                     ) : (
-                      showOtpInput ? t('login.verifyOtp') || 'Verify OTP' : t('login.sendOtp') || 'Send OTP'
+                      showMpinCreation ? t('login.setMpin') || 'Set MPIN' :
+                      showOtpInput ? t('login.verifyOtp') || 'Verify OTP' : 
+                      t('login.sendOtp') || 'Send OTP'
                     )}
                   </button>
                 </div>
