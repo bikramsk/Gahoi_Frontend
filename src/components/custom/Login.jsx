@@ -13,7 +13,7 @@ console.log('Environment Variables:', {
 
 const API_BASE = import.meta.env.MODE === 'production' 
   ? 'https://admin.gahoishakti.in'
-  : '';  
+  : 'http://localhost:1337'; 
 
 const API_TOKEN = import.meta.env.VITE_API_TOKEN || '';
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6Lc4VVkrAAAAAIxY8hXck_UVMmmIqNxjFWaLqq3u';
@@ -536,7 +536,7 @@ const Login = () => {
         if (response.jwt) {
           localStorage.setItem('token', response.jwt);
           localStorage.setItem('verifiedMobile', formData.mobileNumber);
-          navigate('/dashboard');
+          navigate('/registration');
         } else {
           throw new Error('Invalid MPIN');
         }
@@ -601,7 +601,7 @@ const Login = () => {
             setCurrentStep(3);
           } else {
             // User already has MPIN, go to dashboard
-            navigate('/dashboard');
+            navigate('/registration');
           }
         } else {
           throw new Error(response.message || 'Invalid OTP');
