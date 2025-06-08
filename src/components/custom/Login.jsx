@@ -5,143 +5,173 @@ import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
 import { getLoginPageData } from "../../data/loader";
 
-
 console.log('Environment Variables:', {
   MODE: import.meta.env.MODE,
   RECAPTCHA_SITE_KEY: import.meta.env.VITE_RECAPTCHA_SITE_KEY
 });
 
-// Use direct URLs in production, proxy in development
+
 const API_BASE = import.meta.env.MODE === 'production' 
   ? 'https://admin.gahoishakti.in'
   : 'http://localhost:1337';  
 
-const WPSENDERS_BASE = import.meta.env.MODE === 'production'
-  ? 'https://www.wpsenders.in/api'
-  : '/wpsenders';
-
 const API_TOKEN = import.meta.env.VITE_API_TOKEN || '';
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6Lc4VVkrAAAAAIxY8hXck_UVMmmIqNxjFWaLqq3u';
 
 console.log('Using API BASE:', API_BASE);
 
-
-const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6Lc4VVkrAAAAAIxY8hXck_UVMmmIqNxjFWaLqq3u';
-
-const sendWhatsAppOTP = async (mobileNumber) => {
+// Check if user exists and has MPIN
+const checkUserAndMPIN = async (mobileNumber) => {
   try {
-    console.log('Attempting to send WhatsApp OTP for:', mobileNumber);
-    
-    const otp = Math.floor(1000 + Math.random() * 9000);
-    const formattedNumber = mobileNumber;
-    
-    console.log('Sending OTP request for:', formattedNumber);
-
-    
-    await fetch(`${WPSENDERS_BASE}/sendMessage`, {
-      method: 'POST',
+    const response = await fetch(`${API_BASE}/api/check-user-mpin/${mobileNumber}`, {
+      method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: new URLSearchParams({
-        api_key: 'S4YKGP5ZB9Q2J8LIDNM6OACTX',
-        number: formattedNumber,
-        message: `Your OTP for Gahoi Shakti login is: ${otp}. Valid for 10 minutes.`,
-        route: 1,
-        country_code: 91
-      })
-    }).catch(error => {
-      if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-        console.log('CORS error occurred, but the message might have been sent');
-        return new Response(JSON.stringify({ status: true }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-      throw error;
-    });
-
-    // Store OTP in backend 
-    const storeOtpResponse = await fetch(`${API_BASE}/api/user-mpins`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${API_TOKEN}`
       },
-      body: JSON.stringify({
-        data: {
-          mobileNumber: mobileNumber,
-          lastOtp: otp.toString(),
-          lastOtpSent: new Date().toISOString(),
-          otpAttempts: 0
-        }
-      })
+      credentials: 'include'
     });
 
-    if (!storeOtpResponse.ok) {
-      const storeResponseText = await storeOtpResponse.text();
-      console.error('Store OTP Response:', storeResponseText);
-      throw new Error(`Failed to store OTP: ${storeResponseText}`);
+    const responseText = await response.text();
+    console.log('Check User Response:', response.status, responseText);
+
+    if (!response.ok) {
+      throw new Error('Failed to check user status');
     }
 
-    if (import.meta.env.DEV) {
-      console.log('Development OTP:', otp);
-    }
-
-    return { 
-      success: true,
-      message: 'OTP has been sent to your WhatsApp. Please wait a moment to receive it.'
-    };
+    return JSON.parse(responseText);
   } catch (error) {
-    console.error('Error in sendWhatsAppOTP:', error);
-    
-    // For CORS errors in production, continue with the flow
-    if (import.meta.env.PROD && error.name === 'TypeError' && error.message === 'Failed to fetch') {
-      console.log('Production CORS error - assuming WhatsApp message was sent');
-      return {
-        success: true,
-        message: 'OTP has been sent to your WhatsApp. Please wait a moment to receive it.'
-      };
-    }
+    console.error('Error checking user:', error);
     throw error;
   }
 };
 
-const verifyOTP = async (mobileNumber, otp) => {
+// Updated OTP sending function
+const sendWhatsAppOTP = async (mobileNumber) => {
   try {
-    const response = await fetch(`${API_BASE}/user-mpins/verify-otp`, {
+    const response = await fetch(`${API_BASE}/api/send-whatsapp-otp`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${API_TOKEN}`
       },
+      credentials: 'include',
       body: JSON.stringify({
-        mobileNumber,
-        otp
+        mobileNumber: mobileNumber
       })
     });
 
+    const responseText = await response.text();
+    console.log('Send OTP Response:', response.status, responseText);
+
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || 'OTP verification failed');
+      let errorMessage = 'Failed to send OTP';
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.message || errorData.error?.message || errorMessage;
+      } catch (e) {
+        errorMessage = responseText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
 
-    return await response.json();
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (e) {
+      // If response is not JSON, assume success if status is OK
+      result = { success: true, message: 'OTP sent successfully' };
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Error sending WhatsApp OTP:', error);
+    throw error;
+  }
+};
+
+// Updated OTP verification function - Fixed URL
+const verifyOTP = async (mobileNumber, otp) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/verify-otp`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_TOKEN}`
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        mobileNumber: mobileNumber,
+        otp: otp
+      })
+    });
+
+    const responseText = await response.text();
+    console.log('Verify OTP Response:', response.status, responseText);
+
+    if (!response.ok) {
+      let errorMessage = 'OTP verification failed';
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.message || errorData.error?.message || errorMessage;
+      } catch (e) {
+        errorMessage = responseText || errorMessage;
+      }
+      throw new Error(errorMessage);
+    }
+
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (e) {
+      throw new Error('Invalid response format');
+    }
+
+    return result;
   } catch (error) {
     console.error('Error verifying OTP:', error);
     throw error;
   }
 };
 
-// Add proxy URL for development
-const getProxyUrl = (url) => {
-  if (import.meta.env.MODE === 'development') {
-    return url;
+// MPIN verification function
+const verifyMPIN = async (mobileNumber, mpin) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/verify-mpin`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_TOKEN}`
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        mobileNumber: mobileNumber,
+        mpin: mpin
+      })
+    });
+
+    const responseText = await response.text();
+    console.log('Verify MPIN Response:', response.status, responseText);
+
+    if (!response.ok) {
+      let errorMessage = 'MPIN verification failed';
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.message || errorData.error?.message || errorMessage;
+      } catch (e) {
+        errorMessage = responseText || errorMessage;
+      }
+      throw new Error(errorMessage);
+    }
+
+    return JSON.parse(responseText);
+  } catch (error) {
+    console.error('Error verifying MPIN:', error);
+    throw error;
   }
-  // In production, we might need to use a CORS proxy
-  return url;
 };
 
 const Login = () => {
@@ -154,14 +184,19 @@ const Login = () => {
   });
   const [formData, setFormData] = useState({
     mobileNumber: '',
-    otp: ''
+    otp: '',
+    mpin: ''
   });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [authMode, setAuthMode] = useState('otp'); // 'otp' or 'mpin'
   const [showOtpInput, setShowOtpInput] = useState(false);
+  const [showMpinInput, setShowMpinInput] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [recaptchaVerified, setRecaptchaVerified] = useState(false);
+  const [userExists, setUserExists] = useState(false);
+  const [userHasMPIN, setUserHasMPIN] = useState(false);
   const recaptchaRef = useRef(null);
   const [processSteps, setProcessSteps] = useState([
     { 
@@ -192,7 +227,6 @@ const Login = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [countdown, setCountdown] = useState(0);
 
-  
   React.useEffect(() => {
     const loadPageData = async () => {
       try {
@@ -218,6 +252,36 @@ const Login = () => {
     loadPageData();
   }, []);
 
+  // Check user status when mobile number is complete
+  useEffect(() => {
+    const checkUser = async () => {
+      if (formData.mobileNumber.length === 10) {
+        try {
+          const result = await checkUserAndMPIN(formData.mobileNumber);
+          setUserExists(result.exists);
+          setUserHasMPIN(result.hasMPIN);
+          
+          // If user exists and has MPIN, show MPIN option
+          if (result.exists && result.hasMPIN) {
+            // User can choose between OTP or MPIN
+            setAuthMode('mpin'); // Default to MPIN for existing users
+          } else {
+            // New user or user without MPIN - use OTP
+            setAuthMode('otp');
+          }
+        } catch (error) {
+          console.error('Error checking user:', error);
+          // Default to OTP if check fails
+          setAuthMode('otp');
+        }
+      }
+    };
+
+    if (formData.mobileNumber.length === 10) {
+      checkUser();
+    }
+  }, [formData.mobileNumber]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
@@ -237,10 +301,14 @@ const Login = () => {
       }));
     }
 
-    // Reset OTP state when mobile number changes
+    // Reset states when mobile number changes
     if (name === 'mobileNumber') {
       setShowOtpInput(false);
+      setShowMpinInput(false);
       setOtpSent(false);
+      setCurrentStep(1);
+      setUserExists(false);
+      setUserHasMPIN(false);
     }
   };
 
@@ -265,6 +333,27 @@ const Login = () => {
     }
   };
 
+  const handleMpinChange = (e) => {
+    const { value } = e.target;
+    
+    // Only allow 4 digit numbers
+    if (!/^\d*$/.test(value) || value.length > 4) {
+      return;
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      mpin: value
+    }));
+    
+    if (errors.mpin) {
+      setErrors(prev => ({
+        ...prev,
+        mpin: ''
+      }));
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
     
@@ -274,10 +363,18 @@ const Login = () => {
       newErrors.mobileNumber = t('login.errors.mobileLength');
     }
 
-    if (showOtpInput && !formData.otp) {
-      newErrors.otp = t('login.errors.otpRequired');
-    } else if (showOtpInput && formData.otp.length !== 4) {
-      newErrors.otp = t('login.errors.otpLength');
+    if (authMode === 'otp') {
+      if (showOtpInput && !formData.otp) {
+        newErrors.otp = t('login.errors.otpRequired');
+      } else if (showOtpInput && formData.otp.length !== 4) {
+        newErrors.otp = t('login.errors.otpLength');
+      }
+    } else if (authMode === 'mpin') {
+      if (showMpinInput && !formData.mpin) {
+        newErrors.mpin = t('login.errors.mpinRequired') || 'MPIN is required';
+      } else if (showMpinInput && formData.mpin.length !== 4) {
+        newErrors.mpin = t('login.errors.mpinLength') || 'MPIN must be 4 digits';
+      }
     }
 
     setErrors(newErrors);
@@ -295,80 +392,133 @@ const Login = () => {
     return () => clearInterval(timer);
   }, [countdown]);
 
+  // Updated handleSubmit function
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitted(true);
     setErrors({});
     
     if (validateForm()) {
-      if (!showOtpInput) {
+      if (authMode === 'otp' && !showOtpInput) {
+        // Sending OTP
         if (!recaptchaVerified) {
           setErrors({ mobileNumber: t('login.errors.recaptcha') });
           return;
         }
+        
         setLoading(true);
         try {
-          const response = await fetch(`${API_BASE}/api/send-whatsapp-otp`, {
-            method: 'POST',
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-              mobileNumber: formData.mobileNumber
-            })
-          });
-
-          if (!response.ok) {
-            throw new Error('Failed to send OTP');
-          }
-
-          const result = await response.json();
-          if (result.success) {
+          const result = await sendWhatsAppOTP(formData.mobileNumber);
+          console.log('Send OTP Result:', result);
+          
+          if (result.success !== false && (result.success || result.data || result.message)) {
             setShowOtpInput(true);
             setOtpSent(true);
             setCurrentStep(2);
-            setCountdown(20);
+            setCountdown(60);
+            setErrors({});
+            
+            if (recaptchaRef.current) {
+              recaptchaRef.current.reset();
+              setRecaptchaVerified(false);
+            }
+          } else {
+            throw new Error(result.message || 'Failed to send OTP');
           }
         } catch (error) {
           console.error('Error sending OTP:', error);
           setErrors({ 
-            mobileNumber: t('login.errors.otpSendFailed')
+            mobileNumber: error.message || t('login.errors.otpSendFailed') || 'Failed to send OTP'
           });
         } finally {
           setLoading(false);
         }
-      } else {
+      } else if (authMode === 'mpin' && !showMpinInput) {
+        // Show MPIN input
+        if (!recaptchaVerified) {
+          setErrors({ mobileNumber: t('login.errors.recaptcha') });
+          return;
+        }
+        setShowMpinInput(true);
+        setCurrentStep(2);
+      } else if (authMode === 'otp' && showOtpInput) {
+        // Verifying OTP
         setLoading(true);
         try {
-          // Verify OTP
           const response = await verifyOTP(formData.mobileNumber, formData.otp);
+          console.log('OTP Verification Result:', response);
           
-          if (response.jwt) {
-            localStorage.setItem('token', response.jwt);
+          const token = response.jwt || response.token || response.data?.jwt || response.data?.token;
+          
+          if (token) {
+            localStorage.setItem('token', token);
             localStorage.setItem('verifiedMobile', formData.mobileNumber);
             
-            // Update steps progress
             const updatedSteps = [...processSteps];
+            updatedSteps[0].completed = true;
             updatedSteps[1].completed = true;
             setProcessSteps(updatedSteps);
+            setCurrentStep(3);
             
-            navigate('/registration', { 
-              state: { 
-                mobileNumber: formData.mobileNumber,
-                fromLogin: true,
-                processSteps: updatedSteps
-              } 
-            });
+            // Check if user is registered based on response
+            if (response.isRegistered) {
+              // User is already registered, go to dashboard
+              navigate('/dashboard');
+            } else {
+              // User needs to complete registration
+              navigate('/registration', { 
+                state: { 
+                  mobileNumber: formData.mobileNumber,
+                  fromLogin: true,
+                  processSteps: updatedSteps
+                } 
+              });
+            }
           } else {
-            throw new Error('No token received');
+            throw new Error(response.message || 'Invalid OTP. Please try again.');
           }
         } catch (error) {
           console.error('Error verifying OTP:', error);
           setErrors({ 
-            otp: t('login.errors.invalidOtp') || 'Invalid OTP. Please try again.'
+            otp: error.message || t('login.errors.invalidOtp') || 'Invalid OTP. Please try again.'
           });
+          setFormData(prev => ({ ...prev, otp: '' }));
+        } finally {
+          setLoading(false);
+        }
+      } else if (authMode === 'mpin' && showMpinInput) {
+        // Verifying MPIN
+        setLoading(true);
+        try {
+          const response = await verifyMPIN(formData.mobileNumber, formData.mpin);
+          console.log('MPIN Verification Result:', response);
+          
+          const token = response.jwt || response.token;
+          
+          if (token) {
+            localStorage.setItem('token', token);
+            localStorage.setItem('verifiedMobile', formData.mobileNumber);
+            
+            // MPIN users are typically already registered
+            if (response.isRegistered) {
+              navigate('/dashboard');
+            } else {
+              navigate('/registration', { 
+                state: { 
+                  mobileNumber: formData.mobileNumber,
+                  fromLogin: true
+                } 
+              });
+            }
+          } else {
+            throw new Error(response.message || 'Invalid MPIN. Please try again.');
+          }
+        } catch (error) {
+          console.error('Error verifying MPIN:', error);
+          setErrors({ 
+            mpin: error.message || 'Invalid MPIN. Please try again.'
+          });
+          setFormData(prev => ({ ...prev, mpin: '' }));
         } finally {
           setLoading(false);
         }
@@ -376,8 +526,51 @@ const Login = () => {
     }
   };
 
+  // Updated resend OTP function
+  const handleResendOtp = async () => {
+    if (countdown > 0 || loading) return;
+    
+    setLoading(true);
+    setErrors({});
+    
+    try {
+      const result = await sendWhatsAppOTP(formData.mobileNumber);
+      
+      if (result.success !== false && (result.success || result.data || result.message)) {
+        setCountdown(60);
+        setFormData(prev => ({ ...prev, otp: '' }));
+        setErrors({});
+      } else {
+        throw new Error(result.message || 'Failed to resend OTP');
+      }
+    } catch (error) {
+      console.error('Error resending OTP:', error);
+      setErrors({ 
+        otp: error.message || t('login.errors.otpSendFailed') || 'Failed to resend OTP'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleRecaptchaChange = (value) => {
     setRecaptchaVerified(!!value);
+    if (errors.mobileNumber && errors.mobileNumber.includes('captcha')) {
+      setErrors(prev => ({
+        ...prev,
+        mobileNumber: ''
+      }));
+    }
+  };
+
+  const handleAuthModeChange = (mode) => {
+    setAuthMode(mode);
+    setShowOtpInput(false);
+    setShowMpinInput(false);
+    setOtpSent(false);
+    setCurrentStep(1);
+    setFormData(prev => ({ ...prev, otp: '', mpin: '' }));
+    setErrors({});
   };
 
   const hasError = (fieldName) => {
@@ -407,17 +600,14 @@ const Login = () => {
         }
       }
     >
-      
-
-<Helmet>
+      <Helmet>
         <title>{t('login.pageTitle')}</title>
-       
       </Helmet>
 
       {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 to-slate-800/70"></div>
       
-      {/* Back to Home  */}
+      {/* Back to Home */}
       <button 
         onClick={() => navigate('/')}
         className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-red-700 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-red-800 transition-colors duration-200 z-20 flex items-center text-xs sm:text-sm"
@@ -429,7 +619,7 @@ const Login = () => {
       </button>
 
       <div className="w-full max-w-4xl mx-auto flex flex-col md:flex-row rounded-xl sm:rounded-2xl shadow-xl sm:shadow-2xl overflow-hidden mt-10 md:mt-4 sm:mt-8 border border-2 border-[#DE7D37] relative z-10">
-        {/* Left section  */}
+        {/* Left section */}
         <div className="bg-red-800 text-white p-4 sm:p-6 flex flex-col items-center justify-center w-full md:w-1/3">
           <div className="w-full flex flex-col justify-center items-center h-full py-2 sm:py-4">
             <div className="p-2 sm:p-4 rounded-xl inline-block">
@@ -454,18 +644,22 @@ const Login = () => {
             <div className="w-full bg-gray-200 h-1.5 sm:h-2 mt-2 sm:mt-3 mb-3 sm:mb-4 rounded-full overflow-hidden">
               <div 
                 className="bg-red-700 h-1.5 sm:h-2 transition-all duration-500 ease-in-out"
-                style={{ width: processSteps[0].completed ? '25%' : (processSteps[1].completed ? '50%' : '10%') }}
+                style={{ width: `${(currentStep / processSteps.length) * 100}%` }}
               ></div>
             </div>
             
             <div className="flex justify-between px-1 sm:px-2 text-xs mb-3 sm:mb-5">
-              {processSteps.map((step) => (
+              {processSteps.map((step, index) => (
                 <div 
                   key={step.id} 
-                  className={`flex flex-col items-center ${step.completed ? 'text-red-700' : 'text-gray-400'}`}
+                  className={`flex flex-col items-center ${
+                    step.completed ? 'text-red-700' : 
+                    (index + 1 === currentStep ? 'text-red-600' : 'text-gray-400')
+                  }`}
                 >
                   <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center mb-1 ${
-                    step.completed ? 'bg-red-700 text-white' : 'bg-gray-300 text-gray-500'
+                    step.completed ? 'bg-red-700 text-white' : 
+                    (index + 1 === currentStep ? 'bg-red-200 text-red-700 border-2 border-red-700' : 'bg-gray-300 text-gray-500')
                   }`}>
                     {step.completed ? (
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-2 w-2 sm:h-3 sm:w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -482,20 +676,54 @@ const Login = () => {
             
             <div className="bg-white p-3 sm:p-5 rounded-lg shadow-sm border border-gray-100">
               <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-                {/* Authentication - OTP */}
-                <div className="bg-slate-50 p-2 sm:p-3 rounded-lg flex justify-center border border-slate-200">
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      className="form-radio h-3 w-3 sm:h-4 sm:w-4 text-red-700"
-                      name="authType"
-                      value="otp"
-                      checked={true}
-                      readOnly
-                    />
-                    <span className="ml-2 text-gray-700 font-medium text-xs sm:text-sm">{t('login.otpAuth')}</span>
-                  </label>
-                </div>
+                {/* Authentication Mode Selection */}
+                {userExists && userHasMPIN && !showOtpInput && !showMpinInput && (
+                  <div className="bg-slate-50 p-2 sm:p-3 rounded-lg border border-slate-200">
+                    <div className="flex justify-center space-x-4">
+                      <label className="inline-flex items-center">
+                        <input
+                          type="radio"
+                          className="form-radio h-3 w-3 sm:h-4 sm:w-4 text-red-700"
+                          name="authType"
+                          value="mpin"
+                          checked={authMode === 'mpin'}
+                          onChange={() => handleAuthModeChange('mpin')}
+                        />
+                        <span className="ml-2 text-gray-700 font-medium text-xs sm:text-sm">{t('login.mpinAuth') || 'MPIN'}</span>
+                      </label>
+                      <label className="inline-flex items-center">
+                        <input
+                          type="radio"
+                          className="form-radio h-3 w-3 sm:h-4 sm:w-4 text-red-700"
+                          name="authType"
+                          value="otp"
+                          checked={authMode === 'otp'}
+                          onChange={() => handleAuthModeChange('otp')}
+                        />
+                        <span className="ml-2 text-gray-700 font-medium text-xs sm:text-sm">{t('login.otpAuth')}</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                {/* Single auth mode display for new users */}
+                {(!userExists || !userHasMPIN) && (
+                  <div className="bg-slate-50 p-2 sm:p-3 rounded-lg flex justify-center border border-slate-200">
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        className="form-radio h-3 w-3 sm:h-4 sm:w-4 text-red-700"
+                        name="authType"
+                        value="otp"
+                        checked={true}
+                        readOnly
+                      />
+                      <span className="ml-2 text-gray-700 font-medium text-xs sm:text-sm">{t('login.otpAuth')}</span>
+                    </label>
+                  </div>
+                )}
+                
+              
                 
                 {/* Mobile Number Input */}
                 <div className="space-y-1 sm:space-y-2">
@@ -524,7 +752,7 @@ const Login = () => {
                   )}
                 </div>
 
-                {/* CAPTCHA - Only show if user doesn't exist and OTP input is not shown */}
+                {/* CAPTCHA - Only show if OTP input is not shown */}
                 {!showOtpInput && (
                   <div className="space-y-2 sm:space-y-3">
                     <div className="flex justify-center transform scale-90 sm:scale-100 origin-top">
@@ -538,7 +766,7 @@ const Login = () => {
                   </div>
                 )}
 
-                {/* OTP Input - Only show if user doesn't exist */}
+                {/* OTP Input */}
                 {showOtpInput && (
                   <div className="space-y-2 sm:space-y-3">
                     <div className="flex justify-between items-center">
@@ -552,10 +780,10 @@ const Login = () => {
                         <div className="flex space-x-2 items-center">
                           <button
                             type="button"
-                            onClick={handleSubmit}
+                            onClick={handleResendOtp}
                             disabled={loading || countdown > 0}
-                            className={`text-[10px] sm:text-xs ${
-                              countdown > 0 ? 'text-gray-400 cursor-not-allowed' : 'text-red-700 hover:text-red-800'
+                            className={`text-[10px] sm:text-xs font-medium ${
+                              countdown > 0 ? 'text-gray-400 cursor-not-allowed' : 'text-red-700 hover:text-red-800 hover:underline'
                             }`}
                           >
                             {countdown > 0 ? `${t('login.resendOtp')} (${countdown}s)` : t('login.resendOtp')}
@@ -568,7 +796,7 @@ const Login = () => {
                       name="otp"
                       value={formData.otp}
                       onChange={handleOtpChange}
-                      className={`w-full px-2 sm:px-3 py-1.5 sm:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 text-sm ${
+                      className={`w-full px-2 sm:px-3 py-1.5 sm:py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200 text-sm text-center tracking-widest ${
                         hasError('otp') ? 'border-red-500 bg-red-50' : 'border-gray-300'
                       }`}
                       pattern="[0-9]*"
@@ -576,33 +804,40 @@ const Login = () => {
                       maxLength={4}
                       placeholder={t('login.otpPlaceholder')}
                       disabled={loading}
+                      autoComplete="one-time-code"
                     />
                     {hasError('otp') && (
                       <p className="text-red-500 text-[10px] sm:text-xs">{errors.otp}</p>
                     )}
-                    {otpSent && (
+                    {otpSent && !errors.otp && (
                       <p className="text-[10px] sm:text-xs text-gray-600">
-                        {t('login.otpSentMessage')}
+                        {t('login.otpSentMessage')} <span className="font-medium">WhatsApp</span>
                       </p>
                     )}
                   </div>
                 )}
 
-                {/* Action Buttons */}
+                {/* Submit Button */}
                 <div className="flex items-center justify-between pt-1">
-                  {!showOtpInput && (
-                    <div className="flex w-full justify-between gap-2">
-                      <button 
-                        type="submit" 
-                        disabled={loading || (!showOtpInput && !recaptchaVerified)}
-                        className={`bg-red-700 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 font-medium text-xs sm:text-sm ${
-                          loading || (!showOtpInput && !recaptchaVerified) ? 'opacity-75 cursor-not-allowed' : ''
-                        }`}
-                      >
-                        {loading ? t('login.sending') : t('login.sendOtp')}
-                      </button>
-                    </div>
-                  )}
+                  <button 
+                    type="submit" 
+                    disabled={loading || (!showOtpInput && !recaptchaVerified)}
+                    className={`w-full bg-red-700 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 font-medium text-xs sm:text-sm flex items-center justify-center ${
+                      loading || (!showOtpInput && !recaptchaVerified) ? 'opacity-75 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {loading && (
+                      <svg className="animate-spin -ml-1 mr-2 h-3 w-3 sm:h-4 sm:w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    )}
+                    {loading ? (
+                      showOtpInput ? t('login.verifying') || 'Verifying...' : t('login.sending') || 'Sending...'
+                    ) : (
+                      showOtpInput ? t('login.verifyOtp') || 'Verify OTP' : t('login.sendOtp') || 'Send OTP'
+                    )}
+                  </button>
                 </div>
               </form>
             </div>
@@ -625,8 +860,3 @@ const Login = () => {
 };
 
 export default Login;
-
-
-
-
-
