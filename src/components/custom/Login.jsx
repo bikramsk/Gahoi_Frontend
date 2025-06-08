@@ -190,10 +190,11 @@ const Login = () => {
         const response = await getLoginPageData();
         if (response?.data?.[0]) {
           const data = response.data[0];
+        
           const logoUrl = data.logo?.url ? 
-            (data.logo.url.startsWith('http') ? data.logo.url : `${API_BASE}${data.logo.url}`) : 
-            null;
-          
+            (data.logo.url.startsWith('http') ? data.logo.url : `${API_BASE}/uploads${data.logo.url}`) : 
+            '/logo.png';          
+            
           setPageData({
             logoUrl,
             welcomeMessage: data.welcomeMessage || '',
