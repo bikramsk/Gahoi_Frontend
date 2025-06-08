@@ -19,7 +19,20 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:1337',
         changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, '')
       },
+      '/wpsenders': {
+        target: 'https://www.wpsenders.in/api',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/wpsenders/, '')
+      },
+      '/uploads': {
+        target: 'http://localhost:1337',
+        changeOrigin: true,
+        secure: false
+      }
     },
   },
   assetsInclude: ['**/*.woff', '**/*.woff2'],

@@ -1,36 +1,137 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Helmet } from "react-helmet-async";
 import { useTranslation } from "react-i18next";
-
 import { getLoginPageData } from "../../data/loader";
 
-const API_URL = import.meta.env.VITE_PUBLIC_STRAPI_API_URL;
 
-// Function to check if user exists in Strapi backend
-const checkUserExists = async (mobileNumber) => {
+console.log('Environment Variables:', {
+  MODE: import.meta.env.MODE,
+  RECAPTCHA_SITE_KEY: import.meta.env.VITE_RECAPTCHA_SITE_KEY
+});
+
+// Use direct URLs in production, proxy in development
+const API_BASE = import.meta.env.MODE === 'production' 
+  ? 'https://admin.gahoishakti.in'
+  : '';  
+
+const WPSENDERS_BASE = import.meta.env.MODE === 'production'
+  ? 'https://www.wpsenders.in/api'
+  : '/wpsenders';
+
+const API_TOKEN = import.meta.env.VITE_API_TOKEN || '';
+
+console.log('Using API BASE:', API_BASE);
+
+
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6Lc4VVkrAAAAAIxY8hXck_UVMmmIqNxjFWaLqq3u';
+
+const sendWhatsAppOTP = async (mobileNumber) => {
   try {
-    const url = `${API_URL}/api/registration-pages?filters[personal_information][mobile_number][$eq]=${mobileNumber}`;
+    console.log('Attempting to send WhatsApp OTP for:', mobileNumber);
+    
+    const otp = Math.floor(1000 + Math.random() * 9000);
+    const formattedNumber = mobileNumber;
+    
+    console.log('Sending OTP request for:', formattedNumber);
 
-    const response = await fetch(url, {
-      method: 'GET',
+    
+    await fetch(`${WPSENDERS_BASE}/sendMessage`, {
+      method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        api_key: 'S4YKGP5ZB9Q2J8LIDNM6OACTX',
+        number: formattedNumber,
+        message: `Your OTP for Gahoi Shakti login is: ${otp}. Valid for 10 minutes.`,
+        route: 1,
+        country_code: 91
+      })
+    }).catch(error => {
+      if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+        console.log('CORS error occurred, but the message might have been sent');
+        return new Response(JSON.stringify({ status: true }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
       }
+      throw error;
+    });
+
+    // Store OTP in backend 
+    const storeOtpResponse = await fetch(`${API_BASE}/api/user-mpins`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_TOKEN}`
+      },
+      body: JSON.stringify({
+        data: {
+          mobileNumber: mobileNumber,
+          lastOtp: otp.toString(),
+          lastOtpSent: new Date().toISOString(),
+          otpAttempts: 0
+        }
+      })
+    });
+
+    if (!storeOtpResponse.ok) {
+      const storeResponseText = await storeOtpResponse.text();
+      console.error('Store OTP Response:', storeResponseText);
+      throw new Error(`Failed to store OTP: ${storeResponseText}`);
+    }
+
+    if (import.meta.env.DEV) {
+      console.log('Development OTP:', otp);
+    }
+
+    return { 
+      success: true,
+      message: 'OTP has been sent to your WhatsApp. Please wait a moment to receive it.'
+    };
+  } catch (error) {
+    console.error('Error in sendWhatsAppOTP:', error);
+    
+    // For CORS errors in production, continue with the flow
+    if (import.meta.env.PROD && error.name === 'TypeError' && error.message === 'Failed to fetch') {
+      console.log('Production CORS error - assuming WhatsApp message was sent');
+      return {
+        success: true,
+        message: 'OTP has been sent to your WhatsApp. Please wait a moment to receive it.'
+      };
+    }
+    throw error;
+  }
+};
+
+const verifyOTP = async (mobileNumber, otp) => {
+  try {
+    const response = await fetch(`${API_BASE}/user-mpins/verify-otp`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_TOKEN}`
+      },
+      body: JSON.stringify({
+        mobileNumber,
+        otp
+      })
     });
 
     if (!response.ok) {
-      console.error('API Response not ok:', response.status, response.statusText);
-      throw new Error('Failed to check user existence');
+      const errorText = await response.text();
+      throw new Error(errorText || 'OTP verification failed');
     }
 
-    const data = await response.json();
-    return data.data && data.data.length > 0;
-
+    return await response.json();
   } catch (error) {
-    console.error('Error checking user existence:', error);
-    return false;
+    console.error('Error verifying OTP:', error);
+    throw error;
   }
 };
 
@@ -51,18 +152,38 @@ const Login = () => {
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [checkingUser, setCheckingUser] = useState(false);
-  const [userExists, setUserExists] = useState(false);
   const [recaptchaVerified, setRecaptchaVerified] = useState(false);
   const recaptchaRef = useRef(null);
   const [processSteps, setProcessSteps] = useState([
-    { name: t('login.steps.login'), completed: false },
-    { name: t('login.steps.otpVerification'), completed: false },
-    { name: t('login.steps.registration'), completed: false },
-    { name: t('login.steps.completion'), completed: false }
+    { 
+      id: 1,
+      name: 'login.steps.login',
+      description: t('login.steps.login'),
+      completed: false 
+    },
+    { 
+      id: 2,
+      name: 'login.steps.otpVerification',
+      description: t('login.steps.otpVerification'),
+      completed: false 
+    },
+    { 
+      id: 3,
+      name: 'login.steps.registration',
+      description: t('login.steps.registration'),
+      completed: false 
+    },
+    { 
+      id: 4,
+      name: 'login.steps.completion',
+      description: t('login.steps.completion'),
+      completed: false 
+    }
   ]);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [countdown, setCountdown] = useState(0);
 
-  // Load page data
+  
   React.useEffect(() => {
     const loadPageData = async () => {
       try {
@@ -70,7 +191,7 @@ const Login = () => {
         if (response?.data?.[0]) {
           const data = response.data[0];
           const logoUrl = data.logo?.url ? 
-            (data.logo.url.startsWith('http') ? data.logo.url : `${API_URL}${data.logo.url}`) : 
+            (data.logo.url.startsWith('http') ? data.logo.url : `${API_BASE}${data.logo.url}`) : 
             null;
           
           setPageData({
@@ -106,9 +227,8 @@ const Login = () => {
       }));
     }
 
-    // Reset user existence check when mobile number changes
+    // Reset OTP state when mobile number changes
     if (name === 'mobileNumber') {
-      setUserExists(false);
       setShowOtpInput(false);
       setOtpSent(false);
     }
@@ -117,8 +237,8 @@ const Login = () => {
   const handleOtpChange = (e) => {
     const { value } = e.target;
     
-    // Only allow 6 digit numbers
-    if (!/^\d*$/.test(value) || value.length > 6) {
+    // Only allow 4 digit numbers
+    if (!/^\d*$/.test(value) || value.length > 4) {
       return;
     }
     
@@ -146,7 +266,7 @@ const Login = () => {
 
     if (showOtpInput && !formData.otp) {
       newErrors.otp = t('login.errors.otpRequired');
-    } else if (showOtpInput && formData.otp.length !== 6) {
+    } else if (showOtpInput && formData.otp.length !== 4) {
       newErrors.otp = t('login.errors.otpLength');
     }
 
@@ -154,59 +274,21 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Function to check user existence before sending OTP
-  const handleCheckUserAndSendOtp = async () => {
-    if (formData.mobileNumber.length === 10 && recaptchaVerified) {
-      setCheckingUser(true);
-      setErrors({});
-      
-      try {
-        const exists = await checkUserExists(formData.mobileNumber);
-        
-        if (exists) {
-          setUserExists(true);
-          setErrors({ 
-            mobileNumber: 'This mobile number is already registered. Please use a different number.' 
-          });
-          setCheckingUser(false);
-          return;
-        }
-
-        // If user doesn't exist, proceed with OTP sending
-        setLoading(true);
-        setCheckingUser(false);
-        
-        // Simulate OTP send API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        setOtpSent(true);
-        setShowOtpInput(true);
-        setErrors({});
-        setUserExists(false);
-        
-        // Update steps progress
-        const updatedSteps = [...processSteps];
-        updatedSteps[0].completed = true;
-        setProcessSteps(updatedSteps);
-        
-      } catch (error) {
-        console.error('Error in user check or OTP send:', error);
-        setErrors({ 
-          mobileNumber: 'Unable to verify mobile number. Please try again later.' 
-        });
-        setUserExists(false);
-        setOtpSent(false);
-        setShowOtpInput(false);
-      } finally {
-        setLoading(false);
-        setCheckingUser(false);
-      }
+  // Add countdown timer effect
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
     }
-  };
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitted(true);
+    setErrors({});
     
     if (validateForm()) {
       if (!showOtpInput) {
@@ -214,31 +296,45 @@ const Login = () => {
           setErrors({ mobileNumber: t('login.errors.recaptcha') });
           return;
         }
-        await handleCheckUserAndSendOtp();
+        setLoading(true);
+        try {
+          const result = await sendWhatsAppOTP(formData.mobileNumber);
+          if (result.success) {
+            setShowOtpInput(true);
+            setOtpSent(true);
+            setCurrentStep(2);
+            setCountdown(20); // Start 20 second countdown
+          }
+        } catch (error) {
+          console.error('Error sending WhatsApp OTP:', error);
+          if (import.meta.env.PROD && error.name === 'TypeError' && error.message === 'Failed to fetch') {
+            setShowOtpInput(true);
+            setOtpSent(true);
+            setCurrentStep(2);
+            setCountdown(20); // Start 20 second countdown
+          } else {
+            setErrors({ 
+              mobileNumber: t('login.errors.otpSendFailed')
+            });
+          }
+        } finally {
+          setLoading(false);
+        }
       } else {
         setLoading(true);
         try {
-          // Simulate OTP verification - accept any 6-digit OTP
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Verify OTP
+          const response = await verifyOTP(formData.mobileNumber, formData.otp);
           
-          // Simulate successful verification
-          const response = { jwt: 'dummy-token-123456' };
-          
-          // Store the JWT token
           if (response.jwt) {
             localStorage.setItem('token', response.jwt);
-          }
-          
-          // Store mobile number in localStorage for registration page
-          localStorage.setItem('verifiedMobile', formData.mobileNumber);
-          
-          // Update steps progress
-          const updatedSteps = [...processSteps];
-          updatedSteps[1].completed = true;
-          setProcessSteps(updatedSteps);
-          
-          // Redirect to registration
-          setTimeout(() => {
+            localStorage.setItem('verifiedMobile', formData.mobileNumber);
+            
+            // Update steps progress
+            const updatedSteps = [...processSteps];
+            updatedSteps[1].completed = true;
+            setProcessSteps(updatedSteps);
+            
             navigate('/registration', { 
               state: { 
                 mobileNumber: formData.mobileNumber,
@@ -246,19 +342,15 @@ const Login = () => {
                 processSteps: updatedSteps
               } 
             });
-          }, 500);
-          
+          } else {
+            throw new Error('No token received');
+          }
         } catch (error) {
           console.error('Error verifying OTP:', error);
-          let errorMessage = t('login.errors.invalidOtp');
-          
-          if (error.error?.message) {
-            errorMessage = error.error.message;
-          } else if (error.message) {
-            errorMessage = error.message;
-          }
-          
-          setErrors({ otp: errorMessage });
+          setErrors({ 
+            otp: t('login.errors.invalidOtp') || 'Invalid OTP. Please try again.'
+          });
+        } finally {
           setLoading(false);
         }
       }
@@ -272,6 +364,15 @@ const Login = () => {
   const hasError = (fieldName) => {
     return submitted && errors[fieldName];
   };
+
+  // Update processSteps when currentStep changes
+  useEffect(() => {
+    const updatedSteps = processSteps.map((step, index) => ({
+      ...step,
+      completed: index + 1 < currentStep
+    }));
+    setProcessSteps(updatedSteps);
+  }, [currentStep]);
 
   return (
     <div 
@@ -339,9 +440,9 @@ const Login = () => {
             </div>
             
             <div className="flex justify-between px-1 sm:px-2 text-xs mb-3 sm:mb-5">
-              {processSteps.map((step, index) => (
+              {processSteps.map((step) => (
                 <div 
-                  key={index} 
+                  key={step.id} 
                   className={`flex flex-col items-center ${step.completed ? 'text-red-700' : 'text-gray-400'}`}
                 >
                   <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center mb-1 ${
@@ -352,10 +453,10 @@ const Login = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                       </svg>
                     ) : (
-                      index + 1
+                      step.id
                     )}
                   </div>
-                  <span className="text-center text-[10px] sm:text-xs">{step.name}</span>
+                  <span className="text-center text-[10px] sm:text-xs">{t(step.name)}</span>
                 </div>
               ))}
             </div>
@@ -397,7 +498,7 @@ const Login = () => {
                     inputMode="numeric"
                     maxLength={10}
                     placeholder={t('login.mobilePlaceholder')}
-                    disabled={showOtpInput || loading || checkingUser}
+                    disabled={showOtpInput || loading}
                   />
                   {hasError('mobileNumber') && (
                     <p className="text-red-500 text-[10px] sm:text-xs">{errors.mobileNumber}</p>
@@ -405,12 +506,12 @@ const Login = () => {
                 </div>
 
                 {/* CAPTCHA - Only show if user doesn't exist and OTP input is not shown */}
-                {!showOtpInput && !userExists && (
+                {!showOtpInput && (
                   <div className="space-y-2 sm:space-y-3">
                     <div className="flex justify-center transform scale-90 sm:scale-100 origin-top">
                       <ReCAPTCHA
                         ref={recaptchaRef}
-                        sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+                        sitekey={RECAPTCHA_SITE_KEY}
                         onChange={handleRecaptchaChange}
                         size="normal"
                       />
@@ -419,7 +520,7 @@ const Login = () => {
                 )}
 
                 {/* OTP Input - Only show if user doesn't exist */}
-                {showOtpInput && !userExists && (
+                {showOtpInput && (
                   <div className="space-y-2 sm:space-y-3">
                     <div className="flex justify-between items-center">
                       <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center">
@@ -429,13 +530,16 @@ const Login = () => {
                         {t('login.enterOtp')}
                       </label>
                       {otpSent && (
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-2 items-center">
                           <button
                             type="button"
-                            onClick={handleCheckUserAndSendOtp}
-                            className="text-[10px] sm:text-xs text-red-700 hover:text-red-800"
+                            onClick={handleSubmit}
+                            disabled={loading || countdown > 0}
+                            className={`text-[10px] sm:text-xs ${
+                              countdown > 0 ? 'text-gray-400 cursor-not-allowed' : 'text-red-700 hover:text-red-800'
+                            }`}
                           >
-                            {t('login.resendOtp')}
+                            {countdown > 0 ? `${t('login.resendOtp')} (${countdown}s)` : t('login.resendOtp')}
                           </button>
                         </div>
                       )}
@@ -450,7 +554,7 @@ const Login = () => {
                       }`}
                       pattern="[0-9]*"
                       inputMode="numeric"
-                      maxLength={6}
+                      maxLength={4}
                       placeholder={t('login.otpPlaceholder')}
                       disabled={loading}
                     />
@@ -467,31 +571,19 @@ const Login = () => {
 
                 {/* Action Buttons */}
                 <div className="flex items-center justify-between pt-1">
-                  {!showOtpInput && !userExists ? (
+                  {!showOtpInput && (
                     <div className="flex w-full justify-between gap-2">
                       <button 
                         type="submit" 
-                        disabled={loading || checkingUser || (!showOtpInput && !recaptchaVerified)}
+                        disabled={loading || (!showOtpInput && !recaptchaVerified)}
                         className={`bg-red-700 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 font-medium text-xs sm:text-sm ${
-                          loading || checkingUser || (!showOtpInput && !recaptchaVerified) ? 'opacity-75 cursor-not-allowed' : ''
+                          loading || (!showOtpInput && !recaptchaVerified) ? 'opacity-75 cursor-not-allowed' : ''
                         }`}
                       >
-                        {checkingUser ? 'Checking...' : (loading ? t('login.sending') : t('login.sendOtp'))}
+                        {loading ? t('login.sending') : t('login.sendOtp')}
                       </button>
                     </div>
-                  ) : showOtpInput && !userExists ? (
-                    <div className="flex w-full justify-between gap-2">
-                      <button 
-                        type="submit" 
-                        disabled={loading}
-                        className={`bg-red-700 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 font-medium text-xs sm:text-sm ${
-                          loading ? 'opacity-75 cursor-not-allowed' : ''
-                        }`}
-                      >
-                        {loading ? t('login.verifying') : t('login.verifyOtp')}
-                      </button>
-                    </div>
-                  ) : null}
+                  )}
                 </div>
               </form>
             </div>
@@ -514,3 +606,8 @@ const Login = () => {
 };
 
 export default Login;
+
+
+
+
+
