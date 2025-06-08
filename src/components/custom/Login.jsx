@@ -14,7 +14,7 @@ console.log('Environment Variables:', {
 // Use direct URLs in production, proxy in development
 const API_BASE = import.meta.env.MODE === 'production' 
   ? 'https://admin.gahoishakti.in'
-  : '';  
+  : 'http://localhost:1337';  
 
 const WPSENDERS_BASE = import.meta.env.MODE === 'production'
   ? 'https://www.wpsenders.in/api'
@@ -133,6 +133,15 @@ const verifyOTP = async (mobileNumber, otp) => {
     console.error('Error verifying OTP:', error);
     throw error;
   }
+};
+
+// Add proxy URL for development
+const getProxyUrl = (url) => {
+  if (import.meta.env.MODE === 'development') {
+    return url;
+  }
+  // In production, we might need to use a CORS proxy
+  return url;
 };
 
 const Login = () => {
@@ -299,25 +308,34 @@ const Login = () => {
         }
         setLoading(true);
         try {
-          const result = await sendWhatsAppOTP(formData.mobileNumber);
+          const response = await fetch(`${API_BASE}/api/send-whatsapp-otp`, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              mobileNumber: formData.mobileNumber
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to send OTP');
+          }
+
+          const result = await response.json();
           if (result.success) {
             setShowOtpInput(true);
             setOtpSent(true);
             setCurrentStep(2);
-            setCountdown(20); // Start 20 second countdown
+            setCountdown(20);
           }
         } catch (error) {
-          console.error('Error sending WhatsApp OTP:', error);
-          if (import.meta.env.PROD && error.name === 'TypeError' && error.message === 'Failed to fetch') {
-            setShowOtpInput(true);
-            setOtpSent(true);
-            setCurrentStep(2);
-            setCountdown(20); // Start 20 second countdown
-          } else {
-            setErrors({ 
-              mobileNumber: t('login.errors.otpSendFailed')
-            });
-          }
+          console.error('Error sending OTP:', error);
+          setErrors({ 
+            mobileNumber: t('login.errors.otpSendFailed')
+          });
         } finally {
           setLoading(false);
         }
