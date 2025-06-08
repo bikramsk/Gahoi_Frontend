@@ -13,7 +13,7 @@ console.log('Environment Variables:', {
 
 const API_BASE = import.meta.env.MODE === 'production' 
   ? 'https://admin.gahoishakti.in'
-  : 'http://localhost:1337';  
+  : '';  
 
 const API_TOKEN = import.meta.env.VITE_API_TOKEN || '';
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6Lc4VVkrAAAAAIxY8hXck_UVMmmIqNxjFWaLqq3u';
@@ -46,7 +46,7 @@ const checkUserAndMPIN = async (mobileNumber) => {
   }
 };
 
-// Updated OTP sending function
+
 const sendWhatsAppOTP = async (mobileNumber) => {
   try {
     const response = await fetch(`${API_BASE}/api/send-whatsapp-otp`, {
@@ -54,9 +54,7 @@ const sendWhatsAppOTP = async (mobileNumber) => {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_TOKEN}`
       },
-      credentials: 'include',
       body: JSON.stringify({
         mobileNumber: mobileNumber
       })
@@ -80,7 +78,6 @@ const sendWhatsAppOTP = async (mobileNumber) => {
     try {
       result = JSON.parse(responseText);
     } catch {
-      // If response is not JSON, assume success if status is OK
       result = { success: true, message: 'OTP sent successfully' };
     }
 
@@ -91,7 +88,7 @@ const sendWhatsAppOTP = async (mobileNumber) => {
   }
 };
 
-// Updated OTP verification function - Fixed URL
+// Updated OTP verification function
 const verifyOTP = async (mobileNumber, otp) => {
   try {
     const response = await fetch(`${API_BASE}/api/verify-otp`, {
@@ -208,6 +205,8 @@ const Login = () => {
     otp: '',
     mpin: ''
   });
+
+  
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [authMode, setAuthMode] = useState('otp'); // 'otp' or 'mpin'
