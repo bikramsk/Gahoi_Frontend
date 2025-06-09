@@ -49,15 +49,14 @@
     "goBack": "Go Back"
   },
   "login": {
-    "title": "Login",
-    "pageTitle": "Gahoi Shakti - Login",
+    "title": "Login to Your Account",
+    "pageTitle": "Login - Gahoi Samaj",
     "meta": {
       "title": "Login - Gahoi Samaj",
       "description": "Login to access Gahoi Samaj community features and services"
     },
     "backToHome": "Back to Home",
-    "logoAlt": "Gahoi Shakti Logo",
-    "welcomeMessage": "Welcome to Gahoi Shakti",
+    "welcomeMessage": "Welcome to Gahoi Jan Kalyan Samiti",
     "subtitle": "Login to your account",
     "mobileNumber": "Mobile Number",
     "enterOtp": "Enter OTP",
@@ -65,38 +64,22 @@
     "verifyOtp": "Verify OTP",
     "resendOtp": "Resend OTP",
     "waitMessage": "Please wait {{seconds}} seconds before requesting new OTP",
-    "enterMpin": "Enter 4-digit MPIN",
-    "setupMpin": "Setup 4-digit MPIN",
-    "confirmMpin": "Confirm MPIN",
-    "loginWithMpin": "Login with MPIN",
-    "setMpin": "Set MPIN",
-    "useWhatsAppOtp": "Use WhatsApp OTP instead",
-    "mpinPlaceholder": "Enter your 4-digit MPIN",
-    "newMpinPlaceholder": "Enter new 4-digit MPIN",
-    "confirmMpinPlaceholder": "Confirm your MPIN",
-    "continue": "Continue",
-    "processing": "Processing...",
     "errors": {
       "mobileRequired": "Mobile number is required",
       "mobileLength": "Mobile number must be 10 digits",
       "invalidOtp": "Invalid OTP",
       "otpRequired": "OTP is required",
-      "otpLength": "OTP must be 4 digits",
-      "mpinRequired": "MPIN is required",
-      "mpinLength": "MPIN must be 4 digits",
-      "confirmMpinRequired": "Please confirm your MPIN",
-      "mpinMismatch": "MPIN does not match",
-      "invalidMpin": "Invalid MPIN",
       "invalidMobile": "Please enter a valid mobile number",
       "tooManyAttempts": "Too many attempts. Please try again later",
       "serverError": "Server error. Please try again",
-      "otpSendFailed": "Failed to send OTP. Please try again",
-      "recaptcha": "Please complete the reCAPTCHA verification"
+      "mpinRequired": "MPIN is required",
+      "mpinLength": "MPIN must be 4 digits",
+      "mpinMismatch": "MPIN does not match",
+      "confirmMpinRequired": "Please confirm your MPIN"
     },
     "success": {
       "otpSent": "OTP sent successfully",
-      "verified": "Mobile number verified successfully",
-      "mpinSet": "MPIN set successfully"
+      "verified": "Mobile number verified successfully"
     },
     "progress": {
       "step1": "Enter Mobile",
@@ -112,18 +95,18 @@
       "login": "Login",
       "otpVerification": "OTP Verification",
       "registration": "Registration",
-      "completion": "Complete"
+      "completion": "Completion"
     },
     "otpAuth": "OTP Authentication",
-    "otpAuthDescription": "Please enter the OTP sent to your WhatsApp",
+    "otpAuthDescription": "Please enter the OTP sent to your mobile number",
     "otpAuthResendMessage": "Didn't receive OTP?",
     "otpAuthResendButton": "Resend OTP",
     "otpAuthValidating": "Validating OTP...",
     "otpAuthEnterDigits": "Enter 6 digits code",
     "otpAuthRemainingTime": "Resend available in {{seconds}} seconds",
     "mobilePlaceholder": "Enter your 10 digit mobile number",
+    "otpSentMessage": "OTP has been sent to your mobile number",
     "otpPlaceholder": "Enter 4 digit OTP",
-    "otpSentMessage": "OTP has been sent to your WhatsApp",
     "welcomeTitle": "Welcome to Gahoi Jan Kalyan Samiti",
     "communityConnect": "Connect with your community",
     "termsAgreement": "By logging in, you agree to our Terms of Service and Privacy Policy",
@@ -134,7 +117,17 @@
     "sending": "Sending...",
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
-    "slogan": "Together Strong, Together Forward"
+    "slogan": "Empowering your community connection.",
+    "mpinAuth": "MPIN Authentication",
+    "enterMpin": "Enter MPIN",
+    "mpinPlaceholder": "Enter 4 digit MPIN",
+    "setupMpin": "Setup MPIN",
+    "newMpinPlaceholder": "Enter new 4 digit MPIN",
+    "confirmMpin": "Confirm MPIN",
+    "confirmMpinPlaceholder": "Re-enter your MPIN",
+    "useWhatsAppOtp": "Use WhatsApp OTP instead",
+    "setMpin": "Set MPIN",
+    "setting": "Setting MPIN..."
   },
   "latestNews": {
     "meta": {
@@ -604,8 +597,8 @@
           "excerpt": "Recent community gathering brings together families from across the region"
         },
         "1": {
-          "title": "Educational Initiative Launch",
-          "excerpt": "New program to support education for underprivileged children"
+          "title": "Strategic Input for Mahakaushal Assembly",
+          "excerpt": "Constructive suggestions received for social, administrative, and digital development of Mahakaushal Assembly"
         },
         "2": {
           "title": "Cultural Festival Announcement",

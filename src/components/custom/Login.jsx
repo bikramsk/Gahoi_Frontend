@@ -12,7 +12,7 @@ console.log('Environment Variables:', {
 
 
 const API_BASE = import.meta.env.MODE === 'production' 
-  ? 'https://admin.gahoishakti.in'
+  ? 'https://api.gahoishakti.in'
   : 'http://localhost:1337'; 
 
 const API_TOKEN = import.meta.env.VITE_API_TOKEN || '';
@@ -47,86 +47,61 @@ const checkUserAndMPIN = async (mobileNumber) => {
 };
 
 
+
 const sendWhatsAppOTP = async (mobileNumber) => {
   try {
-    const response = await fetch(`${API_BASE}/api/send-whatsapp-otp`, {
+    const response = await fetch('https://api.gahoishakti.in/api/send-whatsapp-otp', {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        mobileNumber: mobileNumber
-      })
+      body: JSON.stringify({ mobileNumber })
     });
 
-    const responseText = await response.text();
-    console.log('Send OTP Response:', response.status, responseText);
-
+    const data = await response.json();
     if (!response.ok) {
-      let errorMessage = 'Failed to send OTP';
-      try {
-        const errorData = JSON.parse(responseText);
-        errorMessage = errorData.message || errorData.error?.message || errorMessage;
-      } catch {
-        errorMessage = responseText || errorMessage;
-      }
-      throw new Error(errorMessage);
+      throw new Error(data.message || 'Failed to send OTP');
     }
 
-    let result;
-    try {
-      result = JSON.parse(responseText);
-    } catch {
-      result = { success: true, message: 'OTP sent successfully' };
+    // Store OTP in sessionStorage if we're in development and OTP is returned
+    if (import.meta.env.MODE === 'development' && data.otp) {
+      console.log('Development OTP:', data.otp);
+      sessionStorage.setItem('currentOTP', data.otp);
+      sessionStorage.setItem('otpTimestamp', Date.now().toString());
+      sessionStorage.setItem('otpMobile', mobileNumber);
     }
 
-    return result;
+    return data;
   } catch (error) {
-    console.error('Error sending WhatsApp OTP:', error);
+    console.error('Error sending OTP:', error);
     throw error;
   }
 };
 
-// Updated OTP verification function
 const verifyOTP = async (mobileNumber, otp) => {
   try {
-    const response = await fetch(`${API_BASE}/api/verify-otp`, {
+    const response = await fetch('https://api.gahoishakti.in/api/verify-otp', {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_TOKEN}`
+        'Content-Type': 'application/json'
       },
-      credentials: 'include',
       body: JSON.stringify({
-        mobileNumber: mobileNumber,
-        otp: otp
+        mobileNumber,
+        otp
       })
     });
 
-    const responseText = await response.text();
-    console.log('Verify OTP Response:', response.status, responseText);
-
+    const data = await response.json();
     if (!response.ok) {
-      let errorMessage = 'OTP verification failed';
-      try {
-        const errorData = JSON.parse(responseText);
-        errorMessage = errorData.message || errorData.error?.message || errorMessage;
-      } catch {
-        errorMessage = responseText || errorMessage;
-      }
-      throw new Error(errorMessage);
+      throw new Error(data.error?.message || data.message || 'Failed to verify OTP');
     }
 
-    let result;
-    try {
-      result = JSON.parse(responseText);
-    } catch {
-      throw new Error('Invalid response format');
-    }
+    // Clear OTP data after successful verification
+    sessionStorage.removeItem('currentOTP');
+    sessionStorage.removeItem('otpTimestamp');
+    sessionStorage.removeItem('otpMobile');
 
-    return result;
+    return data;
   } catch (error) {
     console.error('Error verifying OTP:', error);
     throw error;
@@ -628,7 +603,7 @@ const Login = () => {
       const result = await sendWhatsAppOTP(formData.mobileNumber);
       
       if (result.success !== false && (result.success || result.data || result.message)) {
-        setCountdown(60);
+        setCountdown(30);
         setFormData(prev => ({ ...prev, otp: '' }));
         setErrors({});
       } else {
@@ -788,7 +763,7 @@ const Login = () => {
                           checked={authMode === 'mpin'}
                           onChange={() => handleAuthModeChange('mpin')}
                         />
-                        <span className="ml-2 text-gray-700 font-medium text-xs sm:text-sm">{t('login.mpinAuth') || 'MPIN'}</span>
+                        <span className="ml-2 text-gray-700 font-medium text-xs sm:text-sm">{t('login.mpinAuth')}</span>
                       </label>
                       <label className="inline-flex items-center">
                         <input
@@ -1027,7 +1002,8 @@ const Login = () => {
                       t('login.sending') || 'Sending...'
                     ) : (
                       showMpinCreation ? t('login.setMpin') || 'Set MPIN' :
-                      showOtpInput ? t('login.verifyOtp') || 'Verify OTP' : 
+                      showOtpInput ? t('login.verifyOtp') || 'Verify OTP' :
+                      showMpinInput ? t('common.submit') || 'Submit' :
                       t('login.sendOtp') || 'Send OTP'
                     )}
                   </button>
